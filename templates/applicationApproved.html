@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { margin: 0; padding: 0; background-color: #f4f4f4; font-family: Arial, sans-serif; }
+        .container { padding: 20px; max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background-color: #28a745; color: #ffffff; padding: 20px; text-align: center; }
+        .header h1 { margin: 0; font-size: 24px; }
+        .content { padding: 30px 20px; color: #333333; line-height: 1.6; }
+        .content h2 { color: #28a745; }
+        .button { display: inline-block; background-color: #0d6efd; color: #ffffff; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; }
+        .footer { background-color: #eeeeee; padding: 20px; text-align: center; font-size: 12px; color: #777777; }
+    </style>
+</head>
+<body>
+    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+        <tr>
+            <td align="center">
+                <div class="container">
+                    <div class="header">
+                        <h1>¡Tu cuenta de vendedor ha sido aprobada!</h1>
+                    </div>
+                    <div class="content">
+                        <h2>¡Felicidades, {{nombre}}!</h2>
+                        <p>Nos complace informarte que tu solicitud para convertirte en vendedor en Metrópoli E-commerce ha sido aceptada. Tu cuenta ya está activa y lista para que empieces a vender.</p>
+                        <p>Puedes comenzar a subir tus productos ahora mismo. ¡Estamos ansiosos por ver lo que tienes para ofrecer!</p>
+                        <br>
+                        <div align="center">
+                            <!-- Cambia la URL a la de tu formulario de crear producto -->
+                            <a href="http://localhost:5173/FormNuevopr" class="button">Crear mi primer producto</a>
+                        </div>
+                        <br>
+                        <p>Si tienes alguna pregunta, no dudes en contactarnos.</p>
+                        <p>Atentamente,<br>El equipo de Metrópoli E-commerce</p>
+                    </div>
+                    <div class="footer">
+                        <p>&copy; 2024 Metrópoli E-commerce. Todos los derechos reservados.</p>
+                    </div>
+                </div>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
