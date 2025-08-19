@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Actualización de Solicitud</title>
+    <style>
+        /* Estilos generales para máxima compatibilidad con clientes de correo */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            font-family: Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        table {
+            border-collapse: collapse;
+        }
+        .container {
+            padding: 20px;
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        .header {
+            background-color: #dc3545; /* Rojo para indicar rechazo */
+            color: #ffffff;
+            padding: 25px;
+            text-align: center;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .content {
+            padding: 30px 20px;
+            color: #333333;
+            line-height: 1.6;
+            font-size: 16px;
+        }
+        .content h2 {
+            color: #dc3545;
+            margin-top: 0;
+        }
+        .reason-box {
+            background-color: #f8f9fa;
+            border-left: 5px solid #dc3545;
+            padding: 15px 20px;
+            margin: 25px 0;
+            font-style: italic;
+            color: #555555;
+            border-radius: 4px;
+        }
+        .reason-box p {
+            margin: 0;
+        }
+        .footer {
+            background-color: #eeeeee;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #777777;
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+        <tr>
+            <td align="center" style="padding: 20px;">
+                <table class="container" border="0" cellspacing="0" cellpadding="0">
+                    <!-- Cabecera del Correo -->
+                    <tr>
+                        <td class="header">
+                            <h1>Actualización sobre tu Solicitud</h1>
+                        </td>
+                    </tr>
+                    <!-- Contenido Principal -->
+                    <tr>
+                        <td class="content">
+                            <h2>Hola, {{nombre}}</h2>
+                            <p>Te escribimos para informarte sobre el estado de tu solicitud para convertirte en vendedor en Metrópoli E-commerce. Tras una revisión, lamentamos comunicarte que tu solicitud no ha podido ser aprobada en esta ocasión.</p>
+                            
+                            <div class="reason-box">
+                                <strong>Motivo del rechazo:</strong>
+                                <p>{{motivo}}</p>
+                            </div>
+
+                            <p>Si crees que esto es un error o deseas volver a intentarlo en el futuro, por favor, asegúrate de que toda la información y el comprobante de pago sean claros y correctos. Para cualquier consulta adicional, no dudes en ponerte en contacto con nuestro equipo de soporte.</p>
+                            <p>Agradecemos tu interés.</p>
+                            <p>Atentamente,<br>El equipo de Metrópoli E-commerce</p>
+                        </td>
+                    </tr>
+                    <!-- Pie de Página -->
+                    <tr>
+                        <td class="footer">
+                            <p>&copy; 2024 Metrópoli E-commerce. Todos los derechos reservados.</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

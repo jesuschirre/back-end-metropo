@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* Estilos generales para máxima compatibilidad */
+        body { margin: 0; padding: 0; background-color: #f4f4f4; }
+        table { border-collapse: collapse; }
+        .container { padding: 20px; max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background-color: #0d6efd; color: #ffffff; padding: 20px; text-align: center; font-family: Arial, sans-serif; }
+        .header h1 { margin: 0; font-size: 24px; }
+        .content { padding: 30px 20px; font-family: Arial, sans-serif; color: #333333; line-height: 1.6; }
+        .content h2 { color: #0d6efd; }
+        .button { display: inline-block; background-color: #28a745; color: #ffffff; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; }
+        .footer { background-color: #eeeeee; padding: 20px; text-align: center; font-family: Arial, sans-serif; font-size: 12px; color: #777777; }
+    </style>
+</head>
+<body>
+    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+        <tr>
+            <td align="center">
+                <div class="container">
+                    <!-- Cabecera -->
+                    <div class="header">
+                        <h1>¡Bienvenido a Metrópoli E-commerce!</h1>
+                    </div>
+                    <!-- Contenido -->
+                    <div class="content">
+                        <h2>Hola, {{nombre}}</h2>
+                        <p>¡Gracias por registrarte! Estamos muy emocionados de tenerte con nosotros. Has dado el primer paso para descubrir increíbles productos y ofertas exclusivas.</p>
+                        <p>Explora nuestra tienda y encuentra todo lo que necesitas.</p>
+                        <br>
+                        <div align="center">
+                            <a href="http://localhost:5174" class="button">Ir a la Tienda</a> <!-- Cambia la URL a la de tu tienda -->
+                        </div>
+                        <br>
+                        <p>Si tienes alguna pregunta, no dudes en contactarnos.</p>
+                        <p>Atentamente,<br>El equipo de Metrópoli E-commerce</p>
+                    </div>
+                    <!-- Pie de página -->
+                    <div class="footer">
+                        <p>&copy; Metrópoli E-commerce. Todos los derechos reservados.</p>
+                    </div>
+                </div>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
