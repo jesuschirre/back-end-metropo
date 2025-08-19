@@ -78,5 +78,32 @@ router.get("/mis-productos", verificarToken, async (req, res) => {
     res.status(500).json({ error: "Error al obtener los productos del vendedor" });
   }
 });
+  
+router.get("/producto/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const [rows] = await db.query(`
+      SELECT p.*, c.nombre AS categoria_nombre 
+      FROM productos p
+      JOIN categorias c ON p.categoria_id = c.id
+      WHERE p.id = ?
+    `, [id]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "Producto no encontrado" });
+    }
+
+    const producto = {
+      ...rows[0],
+      precio: Number(rows[0].precio),
+    };
+
+    res.json(producto);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error al obtener el producto" });
+  }
+});
+
 
 module.exports = router;
