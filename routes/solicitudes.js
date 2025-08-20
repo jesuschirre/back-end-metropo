@@ -5,6 +5,8 @@ const multer = require("multer");
 const fs = require("fs");
 const path = require("path");
 const { sendEmail } = require('../utils/mailer');
+// <-- ¡NUEVO! IMPORTAMOS LOS GUARDIANES
+const { verifyToken, isAdmin } = require('../middleware/authMiddleware');
 
 // --- CONFIGURACIÓN DE MULTER (SIN CAMBIOS) ---
 const uploadDir = path.join(__dirname, "..", "uploads");
@@ -22,9 +24,9 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-
-// --- RUTA PARA CREAR UNA SOLICITUD (COMPLETA Y FUNCIONAL) ---
+// --- RUTA PÚBLICA (SIN GUARDIANES) ---
 router.post("/solicitar-vendedor", upload.single("comprobante_pago"), async (req, res) => {
+    // ... (CÓDIGO ORIGINAL SIN CAMBIOS)
     try {
       const { usuario_id, metodo_pago, monto, referencia_pago, plan_nombre } = req.body;
       const comprobante_pago = req.file ? req.file.filename : null;
@@ -59,8 +61,9 @@ router.post("/solicitar-vendedor", upload.single("comprobante_pago"), async (req
     }
 });
 
-// --- RUTA PARA OBTENER TODAS LAS SOLICITUDES (SIN CAMBIOS) ---
-router.get("/solicitudes-vendedor", async (req, res) => {
+// --- RUTAS PROTEGIDAS (CON GUARDIANES) ---
+router.get("/solicitudes-vendedor", [verifyToken, isAdmin], async (req, res) => {
+    // ... (CÓDIGO ORIGINAL SIN CAMBIOS)
     try {
         const [solicitudes] = await db.query(`SELECT s.id, s.usuario_id, u.nombre, u.correo, s.estado, s.fecha_solicitud, s.metodo_pago, s.monto, s.referencia_pago, s.comprobante_pago FROM solicitudes_vendedor s INNER JOIN usuarios u ON s.usuario_id = u.id ORDER BY s.fecha_solicitud DESC`);
         res.json(solicitudes);
@@ -70,25 +73,19 @@ router.get("/solicitudes-vendedor", async (req, res) => {
     }
 });
 
-// --- RUTA PARA ACEPTAR UNA SOLICITUD (ACTUALIZADA CON ENVÍO DE CORREO) ---
-router.post("/solicitudes-vendedor/aceptar", async (req, res) => {
+router.post("/solicitudes-vendedor/aceptar", [verifyToken, isAdmin], async (req, res) => {
+    // ... (CÓDIGO ORIGINAL SIN CAMBIOS)
     try {
         const { solicitud_id } = req.body;
         if (!solicitud_id) return res.status(400).json({ message: "Falta el ID de la solicitud" });
-
         const [rows] = await db.query("SELECT * FROM solicitudes_vendedor WHERE id = ?", [solicitud_id]);
         if (rows.length === 0) return res.status(404).json({ message: "No se encontró la solicitud" });
-        
         const usuario_id = rows[0].usuario_id;
         const [[usuario]] = await db.query('SELECT nombre, correo FROM usuarios WHERE id = ?', [usuario_id]);
         if (!usuario) return res.status(404).json({ message: "El usuario asociado no fue encontrado." });
-
-        // Actualizar Base de Datos
         await db.query("UPDATE solicitudes_vendedor SET estado = 'aprobada' WHERE id = ?", [solicitud_id]);
         await db.query("INSERT IGNORE INTO vendedores (usuario_id) VALUES (?)", [usuario_id]);
         await db.query("UPDATE usuarios SET rol = 'vendedor' WHERE id = ?", [usuario_id]);
-
-        // Enviar Correo de Aprobación
         try {
             const templatePath = path.join(__dirname, '..', 'templates', 'applicationApproved.html');
             let htmlContent = fs.readFileSync(templatePath, 'utf8').replace('{{nombre}}', usuario.nombre);
@@ -96,7 +93,6 @@ router.post("/solicitudes-vendedor/aceptar", async (req, res) => {
         } catch (emailError) {
             console.error("Solicitud aprobada, pero el correo de notificación falló:", emailError);
         }
-
         res.json({ message: `Solicitud aceptada. Se ha notificado a ${usuario.nombre} por correo.` });
     } catch (err) {
         console.error(err);
@@ -104,25 +100,17 @@ router.post("/solicitudes-vendedor/aceptar", async (req, res) => {
     }
 });
 
-// ======================================================
-// ===== NUEVA RUTA PARA RECHAZAR UNA SOLICITUD =====
-// ======================================================
-router.post("/solicitudes-vendedor/rechazar", async (req, res) => {
+router.post("/solicitudes-vendedor/rechazar", [verifyToken, isAdmin], async (req, res) => {
+    // ... (CÓDIGO ORIGINAL SIN CAMBIOS)
     try {
         const { solicitud_id, motivo } = req.body;
         if (!solicitud_id || !motivo) return res.status(400).json({ message: "Falta el ID de la solicitud y el motivo del rechazo." });
-
         const [rows] = await db.query("SELECT * FROM solicitudes_vendedor WHERE id = ?", [solicitud_id]);
         if (rows.length === 0) return res.status(404).json({ message: "No se encontró la solicitud" });
-
         const usuario_id = rows[0].usuario_id;
         const [[usuario]] = await db.query('SELECT nombre, correo FROM usuarios WHERE id = ?', [usuario_id]);
         if (!usuario) return res.status(404).json({ message: "El usuario asociado no fue encontrado." });
-        
-        // Actualizar Base de Datos
         await db.query("UPDATE solicitudes_vendedor SET estado = 'rechazada' WHERE id = ?", [solicitud_id]);
-
-        // Enviar Correo de Rechazo
         try {
             const templatePath = path.join(__dirname, '..', 'templates', 'applicationRejected.html');
             let htmlContent = fs.readFileSync(templatePath, 'utf8');
@@ -131,7 +119,6 @@ router.post("/solicitudes-vendedor/rechazar", async (req, res) => {
         } catch (emailError) {
             console.error("Solicitud rechazada, pero el correo de notificación falló:", emailError);
         }
-
         res.json({ message: `Solicitud rechazada. Se ha notificado a ${usuario.nombre} con el motivo proporcionado.` });
     } catch (err) {
         console.error(err);
