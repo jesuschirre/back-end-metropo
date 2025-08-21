@@ -57,17 +57,31 @@ router.get("/", async (req, res) => {
 
 // Obtener productos de un vendedor específico con categoría
 router.get("/mis-productos", verificarToken, async (req, res) => {
-  const vendedor_id = req.user.id;
+  const usuario_id = req.user.id; // del token
+
   try {
-    const [rows] = await db.query(`
-      SELECT p.*, c.nombre AS categoria_nombre 
+    // 1. Buscar al vendedor correspondiente
+    const [vendedorRows] = await db.query(
+      "SELECT id FROM vendedores WHERE usuario_id = ?",
+      [usuario_id]
+    );
+
+    if (vendedorRows.length === 0) {
+      return res.status(404).json({ error: "No se encontró un vendedor para este usuario" });
+    }
+
+    const vendedor_id = vendedorRows[0].id;
+
+    // 2. Buscar los productos de ese vendedor
+    const [productosRows] = await db.query(`
+      SELECT p.*, c.nombre AS categoria_nombre
       FROM productos p
       JOIN categorias c ON p.categoria_id = c.id
       WHERE p.vendedor_id = ?
     `, [vendedor_id]);
 
     // Convertir precio a número
-    const productos = rows.map(p => ({
+    const productos = productosRows.map(p => ({
       ...p,
       precio: Number(p.precio)
     }));
@@ -78,6 +92,9 @@ router.get("/mis-productos", verificarToken, async (req, res) => {
     res.status(500).json({ error: "Error al obtener los productos del vendedor" });
   }
 });
+
+router.delete ()
+
   
 router.get("/producto/:id", async (req, res) => {
   const { id } = req.params;
