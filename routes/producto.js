@@ -93,9 +93,6 @@ router.get("/mis-productos", verificarToken, async (req, res) => {
   }
 });
 
-router.delete ()
-
-  
 router.get("/producto/:id", async (req, res) => {
   const { id } = req.params;
   try {
