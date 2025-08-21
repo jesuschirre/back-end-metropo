@@ -34,6 +34,8 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 // =================================================================
 // Ahora que las variables de entorno están cargadas, podemos importar
 // y usar nuestras rutas de forma segura.
+app.use('/api/auth', require('./routes/auth')); // <-- AÑADIR ESTA LÍNEA
+
 app.use('/users', require('./routes/users'));
 app.use('/solicitudes', require('./routes/solicitudes'));
 app.use('/vendedores', require('./routes/vendedor'));
