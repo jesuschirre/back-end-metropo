@@ -43,6 +43,7 @@ app.use('/productos', require('./routes/producto'));
 app.use('/categorias', require('./routes/categorias'));
 app.use('/api/configuracion', require('./routes/configuracionCorreo')); // <-- Tu nueva ruta
 app.use('/api/planes', require('./routes/planes'));
+app.use('/api/admin/usuarios', require('./routes/usuariosadmin'));
 // =================================================================
 // 5. INICIO DEL SERVIDOR
 // =================================================================
