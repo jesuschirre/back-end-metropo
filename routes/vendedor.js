@@ -27,14 +27,13 @@ router.get('/vendedor/usuario/:usuario_id', async (req, res) => {
 // Editar datos de un vendedor usando el ID del usuario
 router.put('/vendedor/:vendedor_id', async (req, res) => {
   const { vendedor_id } = req.params;
-  const { nombre_tienda, descripcion, telefono, logo } = req.body;
-
+  const { nombre_tienda, descripcion, telefono, logo, banner } = req.body;
   try {
-    const [result] = await db.query(
+      const [result] = await db.query(
       `UPDATE vendedores 
-       SET nombre_tienda = ?, descripcion = ?, telefono = ?, logo = ?
-       WHERE id = ?`,
-      [nombre_tienda, descripcion, telefono, logo, vendedor_id]
+      SET nombre_tienda = ?, descripcion = ?, telefono = ?, logo = ?, banner = ?
+      WHERE id = ?`,
+      [nombre_tienda, descripcion, telefono, logo, banner, vendedor_id]
     );
 
     if (result.affectedRows === 0) {
@@ -45,6 +44,18 @@ router.put('/vendedor/:vendedor_id', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Error al actualizar el vendedor' });
+  }
+});
+
+router.get("/banners", async (req, res) => {
+  try {
+    const [rows] = await db.query(
+      "SELECT banner FROM vendedores WHERE banner IS NOT NULL AND banner != '' ORDER BY RAND() LIMIT 3"
+    );
+    res.json(rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error al obtener banners" });
   }
 });
 
