@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f1f5f9; }
+        .container { max-width: 600px; margin: 20px auto; background-color: #ffffff; border: 1px solid #e2e8f0; }
+        .header { background-color: #475569; color: white; padding: 20px; text-align: center; }
+        .header h1 { margin: 0; font-size: 22px; }
+        .content { padding: 20px; }
+        .details-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .details-table td { padding: 10px; border: 1px solid #e2e8f0; }
+        .details-table td:first-child { font-weight: bold; background-color: #f8fafc; width: 30%; }
+        .footer { background-color: #e2e8f0; padding: 15px; text-align: center; font-size: 12px; color: #64748b; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Notificación: Nuevo Contrato Creado</h1>
+        </div>
+        <div class="content">
+            <p>Se ha registrado un nuevo contrato en el sistema. Estos son los detalles:</p>
+            <table class="details-table">
+                <tr><td>Cliente:</td><td>{{nombre_cliente}}</td></tr>
+                <tr><td>Email Cliente:</td><td>{{email_cliente}}</td></tr>
+                <tr><td>Campaña:</td><td>{{nombre_campana}}</td></tr>
+                <tr><td>Plan:</td><td>{{nombre_plan}}</td></tr>
+                <tr><td>Monto:</td><td>S/ {{monto}}</td></tr>
+                <tr><td>Periodo:</td><td>Del {{fecha_inicio}} al {{fecha_fin}}</td></tr>
+            </table>
+            <p>El contrato en PDF ha sido generado y enviado al cliente. Puedes gestionarlo desde el panel de administración.</p>
+        </div>
+        <div class="footer">
+            <p>Este es un mensaje automático del Sistema Metrópoli.</p>
+        </div>
+    </div>
+</body>
+</html>

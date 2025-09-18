@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f7f6; }
+        .container { max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .header { background-color: #0ea5e9; color: white; padding: 40px 20px; text-align: center; }
+        .header h1 { margin: 0; font-size: 26px; }
+        .content { padding: 30px; color: #333; line-height: 1.7; }
+        .content h2 { color: #1e3a8a; }
+        .button { display: inline-block; background-color: #0ea5e9; color: #ffffff; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; margin-top: 20px; }
+        .footer { background-color: #e2e8f0; padding: 20px; text-align: center; font-size: 12px; color: #64748b; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Nuevo Contrato Generado</h1>
+        </div>
+        <div class="content">
+            <h2>Hola de nuevo, {{nombre_cliente}}.</h2>
+            <p>Hemos generado un nuevo contrato para tu campaña publicitaria "<strong>{{nombre_campana}}</strong>".</p>
+            <p>Tu campaña está programada para iniciar el <strong>{{fecha_inicio}}</strong>.</p>
+            <div align="center">
+                <a href="{{pdfUrl}}" class="button">Ver Contrato (PDF)</a>
+            </div>
+            <p>Puedes ver el historial de todos tus contratos en tu panel de cliente en nuestra web.</p>
+            <p>¡Gracias por seguir confiando en nosotros!</p>
+        </div>
+        <div class="footer">
+            <p>&copy; 2024 Metrópoli Radio. Todos los derechos reservados.</p>
+        </div>
+    </div>
+</body>
+</html>

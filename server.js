@@ -44,6 +44,10 @@ app.use('/categorias', require('./routes/categorias'));
 app.use('/api/configuracion', require('./routes/configuracionCorreo')); // <-- Tu nueva ruta
 app.use('/api/planes', require('./routes/planes'));
 app.use('/api/admin/usuarios', require('./routes/usuariosadmin'));
+
+// AÑADE LA NUEVA RUTA PARA GESTIÓN DE CONTRATOS AQUÍ
+app.use('/api/contratos_admin', require('./routes/contratos_admin'));
+
 // =================================================================
 // 5. INICIO DEL SERVIDOR
 // =================================================================
