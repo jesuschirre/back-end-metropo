@@ -43,6 +43,11 @@ app.use('/api/planes', require('./routes/planes'));
 app.use('/api/admin/usuarios', require('./routes/usuariosadmin'));
 app.use('/api/contratos_admin', require('./routes/contratos_admin'));
 
+// --- AÑADE ESTA LÍNEA AQUÍ ---
+app.use('/api/consultas_admin', require('./routes/consultas_admin'));
+// --------------------------------
+
+
 // =================================================================
 // 5. INICIO DEL SERVIDOR
 // =================================================================

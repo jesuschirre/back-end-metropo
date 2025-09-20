@@ -11,7 +11,7 @@ const { sendEmail } = require('../utils/mailer');
 // APLICAMOS LA SEGURIDAD A TODAS LAS RUTAS DE ESTE ARCHIVO
 router.use(verifyToken, isAdmin);
 
-// FUNCIÓN HELPER PARA PROCESAR PLANTILLAS HTML
+// FUNCIÓN HELPER PARA PROCESAR PLANTILLAS
 async function procesarPlantilla(nombrePlantilla, datos) {
     try {
         const rutaPlantilla = path.join(__dirname, '..', 'templates', `${nombrePlantilla}.html`);
@@ -32,8 +32,7 @@ async function procesarPlantilla(nombrePlantilla, datos) {
 
 router.post("/", async (req, res) => {
     const {
-        cliente_id, nuevo_cliente_nombre, nuevo_cliente_email, nuevo_cliente_tipo_doc,
-        nuevo_cliente_num_doc, nuevo_cliente_direccion, plan_id,
+        cliente_id, nuevo_cliente_nombre, nuevo_cliente_email, plan_id,
         nombre_campana, fecha_inicio, fecha_fin, monto_acordado, detalles_anuncio,
     } = req.body;
 
@@ -57,17 +56,14 @@ router.post("/", async (req, res) => {
         
         if (nuevo_cliente_email) {
             isNewUser = true;
-            const [existingUser] = await connection.query(
-                'SELECT id FROM usuarios WHERE correo = ? OR numero_documento = ?',
-                [nuevo_cliente_email, nuevo_cliente_num_doc]
-            );
-            if (existingUser.length > 0) throw new Error('Ya existe un usuario con ese correo o número de documento.');
+            const [existingUser] = await connection.query('SELECT id FROM usuarios WHERE correo = ?', [nuevo_cliente_email]);
+            if (existingUser.length > 0) throw new Error('Ya existe un usuario con ese correo electrónico.');
             
             passwordTemporal = `Metropoli${new Date().getFullYear()}`;
             const hashedPassword = await bcrypt.hash(passwordTemporal, 10);
             const [newUserResult] = await connection.query(
-                'INSERT INTO usuarios (nombre, correo, password, rol, tipo_documento, numero_documento, direccion) VALUES (?, ?, ?, "vendedor", ?, ?, ?)',
-                [nuevo_cliente_nombre, nuevo_cliente_email, hashedPassword, nuevo_cliente_tipo_doc, nuevo_cliente_num_doc, nuevo_cliente_direccion]
+                'INSERT INTO usuarios (nombre, correo, password, rol) VALUES (?, ?, ?, "vendedor")',
+                [nuevo_cliente_nombre, nuevo_cliente_email, hashedPassword]
             );
             final_cliente_id = newUserResult.insertId;
         } else {
@@ -92,66 +88,59 @@ router.post("/", async (req, res) => {
             const stream = fs.createWriteStream(pdfPath);
             doc.pipe(stream);
             
-            const [clienteData] = await connection.query('SELECT * FROM usuarios WHERE id = ?', [final_cliente_id]);
+            // --- INICIO DEL CONTENIDO COMPLETO DEL PDF ---
+            const [clienteData] = await connection.query('SELECT nombre, correo FROM usuarios WHERE id = ?', [final_cliente_id]);
             const [planData] = await connection.query('SELECT nombre FROM planes WHERE id = ?', [plan_id]);
             const [emisorData] = await connection.query('SELECT nombre, ruc, direccion, telefono FROM configuracion');
             const emisor = emisorData[0];
             const cliente = clienteData[0];
             const planNombre = planData[0].nombre;
 
-            // HEADER
+            // --- HEADER ---
             const logoPath = path.join(__dirname, '..', 'uploads', 'logo.png');
             if (fs.existsSync(logoPath)) doc.image(logoPath, 50, 45, { width: 100 });
             doc.fontSize(16).font('Helvetica-Bold').text(emisor.nombre, 200, 50, { align: 'right' });
             doc.fontSize(10).font('Helvetica').text(`RUC: ${emisor.ruc}`, 200, 70, { align: 'right' });
             doc.text(emisor.direccion, 200, 85, { align: 'right' });
             doc.text(`Teléfono: ${emisor.telefono}`, 200, 100, { align: 'right' });
-
             doc.moveDown(4);
             doc.fontSize(18).font('Helvetica-Bold').text('Contrato de Servicios Publicitarios', { align: 'center' });
             doc.moveDown(2);
-
-            // DATOS GENERALES
             doc.fontSize(12).font('Helvetica').text(`Contrato ID: ${nuevoContratoId}`);
             doc.text(`Fecha de Emisión: ${new Date().toLocaleDateString('es-PE')}`);
             doc.moveDown();
-
-            // DATOS DEL CLIENTE
             doc.font('Helvetica-Bold').text('Datos del Cliente:');
-            doc.font('Helvetica').text(`   Nombre / Razón Social: ${cliente.nombre}`);
-            doc.text(`   ${cliente.tipo_documento || 'DOC'}: ${cliente.numero_documento || 'No especificado'}`);
-            doc.text(`   Dirección: ${cliente.direccion || 'No especificada'}`);
+            doc.font('Helvetica').text(`   Nombre: ${cliente.nombre}`);
             doc.text(`   Email: ${cliente.correo}`);
             doc.moveDown(2);
-
-            // DETALLES DEL SERVICIO
             doc.font('Helvetica-Bold').text('Detalles del Servicio Contratado:');
             doc.moveDown();
+            const tableTop = doc.y;
+            doc.fontSize(10).font('Helvetica-Bold').text('Concepto', 50, tableTop).text('Detalle', 180, tableTop).text('Valor', 450, tableTop, { align: 'right' });
+            doc.moveTo(50, doc.y + 5).lineTo(550, doc.y + 5).strokeColor("#cccccc").stroke();
+            doc.moveDown(2);
             function addRow(item, description, value = '') {
-                doc.font('Helvetica-Bold').text(item, 50, doc.y, { width: 120 });
+                doc.font('Helvetica-Bold').text(item, 50, doc.y);
                 doc.font('Helvetica').text(description, 180, doc.y, { width: 250 });
-                doc.font('Helvetica-Bold').text(value, 450, doc.y, { align: 'right', width: 100 });
+                doc.font('Helvetica-Bold').text(value, 450, doc.y, { align: 'right' });
                 doc.moveDown(1.5);
-                doc.moveTo(50, doc.y - 10).lineTo(550, doc.y - 10).strokeColor("#cccccc").stroke();
             }
             addRow('Campaña', nombre_campana);
             addRow('Plan', planNombre);
             addRow('Periodo de Vigencia', `Del ${new Date(fecha_inicio).toLocaleDateString('es-PE')} al ${new Date(fecha_fin).toLocaleDateString('es-PE')}`);
             doc.moveDown();
-            doc.moveTo(50, doc.y).lineTo(550, doc.y).strokeColor("#333333").stroke();
+            doc.moveTo(50, doc.y).lineTo(550, doc.y).strokeColor("#cccccc").stroke();
             doc.moveDown(0.5);
             addRow('MONTO TOTAL', '', `S/ ${parseFloat(monto_acordado).toFixed(2)}`);
             doc.moveDown(2);
-
-            // GUION
             doc.fontSize(12).font('Helvetica-Bold').text('Guion y Detalles del Anuncio:');
             doc.moveDown(0.5);
             doc.fontSize(10).font('Helvetica').text(detalles_anuncio || 'No se especificaron detalles.', { width: 500, align: 'justify' });
-
-            // FOOTER
             doc.fontSize(8).text('Este documento es una representación oficial del acuerdo de servicios.', 50, 750, { align: 'center', width: 500 });
+            // --- FIN DEL CONTENIDO DEL PDF ---
             
             doc.end();
+
             const finalPdfUrl = `${req.protocol}://${req.get('host')}/uploads/contratos/${pdfName}`;
             stream.on('finish', () => resolve(finalPdfUrl));
             stream.on('error', reject);
@@ -180,8 +169,10 @@ router.post("/", async (req, res) => {
         const templateCliente = datosParaEmail.isNewUser ? 'bienvenida_nuevo_vendedor' : 'nuevo_contrato';
         const asuntoCliente = datosParaEmail.isNewUser ? `¡Bienvenido a Metrópoli Radio, ${datosParaEmail.cliente_nombre}!` : `Nuevo Contrato: ${nombre_campana}`;
         const htmlCliente = await procesarPlantilla(templateCliente, {
-            nombre_cliente: datosParaEmail.cliente_nombre, nombre_campana: nombre_campana,
-            pdfUrl: pdfUrl, passwordTemporal: datosParaEmail.passwordTemporal,
+            nombre_cliente: datosParaEmail.cliente_nombre,
+            nombre_campana: nombre_campana,
+            pdfUrl: pdfUrl,
+            passwordTemporal: datosParaEmail.passwordTemporal,
             fecha_inicio: new Date(fecha_inicio).toLocaleDateString('es-PE')
         });
         sendEmail({ to: datosParaEmail.cliente_email, subject: asuntoCliente, htmlContent: htmlCliente });
@@ -189,9 +180,12 @@ router.post("/", async (req, res) => {
         const [[adminConfig]] = await db.query("SELECT valor_config FROM configuracion_correo WHERE clave_config = 'admin_email_notificaciones'");
         if (adminConfig && adminConfig.valor_config) {
             const htmlAdmin = await procesarPlantilla('admin_nuevo_contrato', {
-                nombre_cliente: datosParaEmail.cliente_nombre, email_cliente: datosParaEmail.cliente_email,
-                nombre_campana: nombre_campana, nombre_plan: datosParaEmail.plan_nombre,
-                monto: monto_acordado, fecha_inicio: new Date(fecha_inicio).toLocaleDateString('es-PE'),
+                nombre_cliente: datosParaEmail.cliente_nombre,
+                email_cliente: datosParaEmail.cliente_email,
+                nombre_campana: nombre_campana,
+                nombre_plan: datosParaEmail.plan_nombre,
+                monto: monto_acordado,
+                fecha_inicio: new Date(fecha_inicio).toLocaleDateString('es-PE'),
                 fecha_fin: new Date(fecha_fin).toLocaleDateString('es-PE')
             });
             sendEmail({ to: adminConfig.valor_config, subject: `Nuevo Contrato Registrado - ${datosParaEmail.cliente_nombre}`, htmlContent: htmlAdmin });
@@ -209,7 +203,18 @@ router.post("/", async (req, res) => {
 // --- ENDPOINTS GET ---
 router.get("/", async (req, res) => {
   try {
-    const query = `SELECT c.*, u.nombre AS nombre_cliente, u.numero_documento, p.nombre AS nombre_plan FROM contratos_publicitarios c JOIN usuarios u ON c.cliente_id = u.id JOIN planes p ON c.plan_id = p.id ORDER BY c.fecha_creacion DESC`;
+    // AÑADIMOS u.numero_documento A LA CONSULTA
+    const query = `
+        SELECT 
+        c.*, 
+        u.nombre AS nombre_cliente, 
+        u.numero_documento,  -- <--- CAMBIO IMPORTANTE AQUÍ
+        p.nombre AS nombre_plan 
+        FROM contratos_publicitarios c 
+        JOIN usuarios u ON c.cliente_id = u.id 
+        JOIN planes p ON c.plan_id = p.id 
+        ORDER BY c.fecha_creacion DESC
+    `;
     const [contratos] = await db.query(query);
     res.json(contratos);
   } catch (err) {
@@ -219,9 +224,20 @@ router.get("/", async (req, res) => {
 });
 
 router.get("/:id", async (req, res) => {
+    // También es buena idea añadirlo aquí para la vista de detalle
     const { id } = req.params;
     try {
-        const query = `SELECT c.*, u.nombre AS nombre_cliente, u.numero_documento, p.nombre AS nombre_plan FROM contratos_publicitarios c JOIN usuarios u ON c.cliente_id = u.id JOIN planes p ON c.plan_id = p.id WHERE c.id = ?`;
+        const query = `
+            SELECT 
+                c.*, 
+                u.nombre AS nombre_cliente, 
+                u.numero_documento, -- <--- CAMBIO IMPORTANTE AQUÍ
+                p.nombre AS nombre_plan 
+            FROM contratos_publicitarios c 
+            JOIN usuarios u ON c.cliente_id = u.id 
+            JOIN planes p ON c.plan_id = p.id 
+            WHERE c.id = ?
+        `;
         const [contratos] = await db.query(query, [id]);
         if (contratos.length === 0) return res.status(404).json({ error: "Contrato no encontrado." });
         res.json(contratos[0]);
