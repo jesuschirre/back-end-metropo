@@ -1,0 +1,170 @@
+PS F:\react\Metropoli\back-end-metropo> node server.js
+[dotenv@17.2.1] injecting env (9) from .env -- tip: 🛠️  run anywhere with  dotenvx run -- yourcommand
+[VERIFICACIÓN .env] BASE_URL ha sido cargada con el valor: http://localhost:3000
+[dotenv@17.2.1] injecting env (0) from .env -- tip: ⚙️  enable debug logging
+with { debug: true }
+Servidor corriendo en http://localhost:3000
+Error en el login: Error
+at PromisePool.query (F:\react\Metropoli\back-end-metropo\node_modules\mysql2\lib\promise\pool.js:36:22)
+at F:\react\Metropoli\back-end-metropo\routes\auth.js:17:34
+at Layer.handleRequest (F:\react\Metropoli\back-end-metropo\node_modules\router\lib\layer.js:152:17)
+at next (F:\react\Metropoli\back-end-metropo\node_modules\router\lib\route.js:157:13)
+at Route.dispatch (F:\react\Metropoli\back-end-metropo\node_modules\router\lib\route.js:117:3)
+at handle (F:\react\Metropoli\back-end-metropo\node_modules\router\index.js:435:11)
+at Layer.handleRequest (F:\react\Metropoli\back-end-metropo\node_modules\router\lib\layer.js:152:17)
+at F:\react\Metropoli\back-end-metropo\node_modules\router\index.js:295:15
+at processParams (F:\react\Metropoli\back-end-metropo\node_modules\router\index.js:582:12)
+at next (F:\react\Metropoli\back-end-metropo\node_modules\router\index.js:291:5) {
+code: 'ETIMEDOUT',
+errno: undefined,
+sql: undefined,
+sqlState: undefined,
+sqlMessage: undefined
+}
+Error en el login: Error
+at PromisePool.query (F:\react\Metropoli\back-end-metropo\node_modules\mysql2\lib\promise\pool.js:36:22)
+at F:\react\Metropoli\back-end-metropo\routes\auth.js:17:34
+at Layer.handleRequest (F:\react\Metropoli\back-end-metropo\node_modules\router\lib\layer.js:152:17)
+at next (F:\react\Metropoli\back-end-metropo\node_modules\router\lib\route.js:157:13)
+at Route.dispatch (F:\react\Metropoli\back-end-metropo\node_modules\router\lib\route.js:117:3)
+at handle (F:\react\Metropoli\back-end-metropo\node_modules\router\index.js:435:11)
+at Layer.handleRequest (F:\react\Metropoli\back-end-metropo\node_modules\router\lib\layer.js:152:17)
+at F:\react\Metropoli\back-end-metropo\node_modules\router\index.js:295:15
+at processParams (F:\react\Metropoli\back-end-metropo\node_modules\router\index.js:582:12)
+at next (F:\react\Metropoli\back-end-metropo\node_modules\router\index.js:291:5) {
+code: 'ETIMEDOUT',
+errno: undefined,
+sql: undefined,
+sqlState: undefined,
+sqlMessage: undefined
+}
+Error en el login: Error
+at PromisePool.query (F:\react\Metropoli\back-end-metropo\node_modules\mysql2\lib\promise\pool.js:36:22)
+at F:\react\Metropoli\back-end-metropo\routes\auth.js:17:34
+at Layer.handleRequest (F:\react\Metropoli\back-end-metropo\node_modules\router\lib\layer.js:152:17)
+at next (F:\react\Metropoli\back-end-metropo\node_modules\router\lib\route.js:157:13)
+at Route.dispatch (F:\react\Metropoli\back-end-metropo\node_modules\router\lib\route.js:117:3)
+at handle (F:\react\Metropoli\back-end-metropo\node_modules\router\index.js:435:11)
+at Layer.handleRequest (F:\react\Metropoli\back-end-metropo\node_modules\router\lib\layer.js:152:17)
+at F:\react\Metropoli\back-end-metropo\node_modules\router\index.js:295:15
+at processParams (F:\react\Metropoli\back-end-metropo\node_modules\router\index.js:582:12)
+at next (F:\react\Metropoli\back-end-metropo\node_modules\router\index.js:291:5) {
+code: 'ETIMEDOUT',
+errno: undefined,
+sql: undefined,
+sqlState: undefined,
+sqlMessage: undefined
+}
+Error en el login: Error
+at PromisePool.query (F:\react\Metropoli\back-end-metropo\node_modules\mysql2\lib\promise\pool.js:36:22)
+at F:\react\Metropoli\back-end-metropo\routes\auth.js:17:34
+at Layer.handleRequest (F:\react\Metropoli\back-end-metropo\node_modules\router\lib\layer.js:152:17)
+at next (F:\react\Metropoli\back-end-metropo\node_modules\router\lib\route.js:157:13)
+at Route.dispatch (F:\react\Metropoli\back-end-metropo\node_modules\router\lib\route.js:117:3)
+at handle (F:\react\Metropoli\back-end-metropo\node_modules\router\index.js:435:11)
+at Layer.handleRequest (F:\react\Metropoli\back-end-metropo\node_modules\router\lib\layer.js:152:17)
+at F:\react\Metropoli\back-end-metropo\node_modules\router\index.js:295:15
+at processParams (F:\react\Metropoli\back-end-metropo\node_modules\router\index.js:582:12)
+at next (F:\react\Metropoli\back-end-metropo\node_modules\router\index.js:291:5) {
+code: 'ETIMEDOUT',
+errno: undefined,
+sql: undefined,
+sqlState: undefined,
+sqlMessage: undefined
+}
+
+mira mierda sali y inicio sesion hast en el ogin error del servidor
+[vite] connecting...
+client:826 [vite] connected.
+react-dom_client.js?v=2b705168:17987 Download the React DevTools for a better development experience: https://react.dev/link/react-devtools
+login:1 [DOM] Input elements should have autocomplete attributes (suggested: "current-password"): (More info: https://goo.gl/9p2vKq) <input id=​"password" required class=​"block w-full px-4 py-2 text-gray-800 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:​outline-none focus:​ring-2 focus:​ring-sky-500 focus:​border-sky-500" type=​"password" value>​
+AuthContext.jsx:29  POST http://localhost:3000/api/auth/login 500 (Internal Server Error)
+login @ AuthContext.jsx:29
+handleSubmit @ Login.jsx:51
+executeDispatch @ react-dom_client.js?v=2b705168:11736
+runWithFiberInDEV @ react-dom_client.js?v=2b705168:1485
+processDispatchQueue @ react-dom_client.js?v=2b705168:11772
+(anónimo) @ react-dom_client.js?v=2b705168:12182
+batchedUpdates$1 @ react-dom_client.js?v=2b705168:2628
+dispatchEventForPluginEventSystem @ react-dom_client.js?v=2b705168:11877
+dispatchEvent @ react-dom_client.js?v=2b705168:14792
+dispatchDiscreteEvent @ react-dom_client.js?v=2b705168:14773
+
+<form>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=2b705168:250
+Login @ Login.jsx:79
+react-stack-bottom-frame @ react-dom_client.js?v=2b705168:17424
+renderWithHooksAgain @ react-dom_client.js?v=2b705168:4281
+renderWithHooks @ react-dom_client.js?v=2b705168:4217
+updateFunctionComponent @ react-dom_client.js?v=2b705168:6619
+beginWork @ react-dom_client.js?v=2b705168:7654
+runWithFiberInDEV @ react-dom_client.js?v=2b705168:1485
+performUnitOfWork @ react-dom_client.js?v=2b705168:10868
+workLoopSync @ react-dom_client.js?v=2b705168:10728
+renderRootSync @ react-dom_client.js?v=2b705168:10711
+performWorkOnRoot @ react-dom_client.js?v=2b705168:10330
+performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=2b705168:11623
+performWorkUntilDeadline @ react-dom_client.js?v=2b705168:36
+<Login>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=2b705168:250
+App @ App.jsx:53
+react-stack-bottom-frame @ react-dom_client.js?v=2b705168:17424
+renderWithHooksAgain @ react-dom_client.js?v=2b705168:4281
+renderWithHooks @ react-dom_client.js?v=2b705168:4217
+updateFunctionComponent @ react-dom_client.js?v=2b705168:6619
+beginWork @ react-dom_client.js?v=2b705168:7654
+runWithFiberInDEV @ react-dom_client.js?v=2b705168:1485
+performUnitOfWork @ react-dom_client.js?v=2b705168:10868
+workLoopSync @ react-dom_client.js?v=2b705168:10728
+renderRootSync @ react-dom_client.js?v=2b705168:10711
+performWorkOnRoot @ react-dom_client.js?v=2b705168:10330
+performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=2b705168:11623
+performWorkUntilDeadline @ react-dom_client.js?v=2b705168:36
+<App>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=2b705168:250
+(anónimo) @ main.jsx:10Entender este error
+AuthContext.jsx:29  POST http://localhost:3000/api/auth/login 500 (Internal Server Error)
+login @ AuthContext.jsx:29
+handleSubmit @ Login.jsx:51
+executeDispatch @ react-dom_client.js?v=2b705168:11736
+runWithFiberInDEV @ react-dom_client.js?v=2b705168:1485
+processDispatchQueue @ react-dom_client.js?v=2b705168:11772
+(anónimo) @ react-dom_client.js?v=2b705168:12182
+batchedUpdates$1 @ react-dom_client.js?v=2b705168:2628
+dispatchEventForPluginEventSystem @ react-dom_client.js?v=2b705168:11877
+dispatchEvent @ react-dom_client.js?v=2b705168:14792
+dispatchDiscreteEvent @ react-dom_client.js?v=2b705168:14773
+<form>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=2b705168:250
+Login @ Login.jsx:79
+react-stack-bottom-frame @ react-dom_client.js?v=2b705168:17424
+renderWithHooksAgain @ react-dom_client.js?v=2b705168:4281
+renderWithHooks @ react-dom_client.js?v=2b705168:4217
+updateFunctionComponent @ react-dom_client.js?v=2b705168:6619
+beginWork @ react-dom_client.js?v=2b705168:7654
+runWithFiberInDEV @ react-dom_client.js?v=2b705168:1485
+performUnitOfWork @ react-dom_client.js?v=2b705168:10868
+workLoopSync @ react-dom_client.js?v=2b705168:10728
+renderRootSync @ react-dom_client.js?v=2b705168:10711
+performWorkOnRoot @ react-dom_client.js?v=2b705168:10330
+performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=2b705168:11623
+performWorkUntilDeadline @ react-dom_client.js?v=2b705168:36
+<Login>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=2b705168:250
+App @ App.jsx:53
+react-stack-bottom-frame @ react-dom_client.js?v=2b705168:17424
+renderWithHooksAgain @ react-dom_client.js?v=2b705168:4281
+renderWithHooks @ react-dom_client.js?v=2b705168:4217
+updateFunctionComponent @ react-dom_client.js?v=2b705168:6619
+beginWork @ react-dom_client.js?v=2b705168:7654
+runWithFiberInDEV @ react-dom_client.js?v=2b705168:1485
+performUnitOfWork @ react-dom_client.js?v=2b705168:10868
+workLoopSync @ react-dom_client.js?v=2b705168:10728
+renderRootSync @ react-dom_client.js?v=2b705168:10711
+performWorkOnRoot @ react-dom_client.js?v=2b705168:10330
+performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=2b705168:11623
+performWorkUntilDeadline @ react-dom_client.js?v=2b705168:36
+<App>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=2b705168:250
+(anónimo) @ main.jsx:10Entender este error
+AuthContext.jsx:29  POST http://localhost:3000/api/auth/login 500 (Internal Server Error) que asco a la firme

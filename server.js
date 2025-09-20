@@ -3,15 +3,14 @@
 // =================================================================
 const express = require('express');
 const cors = require('cors');
-const path = require("path"); // Necesario para construir rutas de archivos
+const path = require("path");
 
 // =================================================================
-// 2. CARGA DE VARIABLES DE ENTORNO (LA SOLUCIÓN)
+// 2. CARGA DE VARIABLES DE ENTORNO
 // =================================================================
-// Esta es la corrección clave. Cargamos el archivo .env explícitamente.
-// Le decimos a dotenv: "Busca y carga el archivo llamado '.env' que está
-// en el mismo directorio donde se encuentra este script (server.js)".
-// Esto se hace ANTES de importar cualquier ruta que dependa de estas variables.
+// Esta es la forma correcta y robusta de cargar tu archivo .env.
+// Esto asegura que todas las demás variables (DB_HOST, JWT_SECRET, etc.)
+// estén disponibles para todas tus rutas.
 require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 
 // =================================================================
@@ -23,29 +22,25 @@ const app = express();
 app.use(cors());
 
 // Permitir que Express procese cuerpos de solicitud en formato JSON.
-// (Nota: Lo tenías dos veces, con una vez es suficiente).
 app.use(express.json());
 
 // Servir archivos estáticos desde la carpeta 'uploads'.
+// Esto es CRUCIAL para que los PDFs (y otras imágenes) sean accesibles desde el navegador.
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // =================================================================
 // 4. REGISTRO DE RUTAS
 // =================================================================
-// Ahora que las variables de entorno están cargadas, podemos importar
-// y usar nuestras rutas de forma segura.
-app.use('/api/auth', require('./routes/auth')); // <-- AÑADIR ESTA LÍNEA
-
+// Aquí se conectan todos tus archivos de rutas a la aplicación principal.
+app.use('/api/auth', require('./routes/auth'));
 app.use('/users', require('./routes/users'));
 app.use('/solicitudes', require('./routes/solicitudes'));
 app.use('/vendedores', require('./routes/vendedor'));
 app.use('/productos', require('./routes/producto'));
 app.use('/categorias', require('./routes/categorias'));
-app.use('/api/configuracion', require('./routes/configuracionCorreo')); // <-- Tu nueva ruta
+app.use('/api/configuracion', require('./routes/configuracionCorreo'));
 app.use('/api/planes', require('./routes/planes'));
 app.use('/api/admin/usuarios', require('./routes/usuariosadmin'));
-
-// AÑADE LA NUEVA RUTA PARA GESTIÓN DE CONTRATOS AQUÍ
 app.use('/api/contratos_admin', require('./routes/contratos_admin'));
 
 // =================================================================

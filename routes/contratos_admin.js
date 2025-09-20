@@ -8,8 +8,10 @@ const path = require('path');
 const { verifyToken, isAdmin } = require('../middleware/authMiddleware');
 const { sendEmail } = require('../utils/mailer');
 
+// APLICAMOS LA SEGURIDAD A TODAS LAS RUTAS DE ESTE ARCHIVO
 router.use(verifyToken, isAdmin);
 
+// FUNCIÓN HELPER PARA PROCESAR PLANTILLAS
 async function procesarPlantilla(nombrePlantilla, datos) {
     try {
         const rutaPlantilla = path.join(__dirname, '..', 'templates', `${nombrePlantilla}.html`);
@@ -20,7 +22,7 @@ async function procesarPlantilla(nombrePlantilla, datos) {
         return html;
     } catch (error) {
         console.error(`Error al procesar la plantilla ${nombrePlantilla}:`, error);
-        return `<p>Error al cargar la plantilla de correo.</p>`;
+        return `<p>Error al cargar la plantilla de correo. Por favor, contacte a soporte.</p>`;
     }
 }
 
@@ -77,7 +79,6 @@ router.post("/", async (req, res) => {
         ]);
         const nuevoContratoId = resultContrato.insertId;
 
-        // --- INICIO DE LA GENERACIÓN COMPLETA DEL PDF ---
         const pdfPromise = new Promise(async (resolve, reject) => {
             const doc = new PDFDocument({ size: 'A4', margin: 50 });
             const pdfName = `contrato-${nuevoContratoId}-${Date.now()}.pdf`;
@@ -87,7 +88,7 @@ router.post("/", async (req, res) => {
             const stream = fs.createWriteStream(pdfPath);
             doc.pipe(stream);
             
-            // --- DATOS NECESARIOS PARA EL PDF ---
+            // --- INICIO DEL CONTENIDO COMPLETO DEL PDF ---
             const [clienteData] = await connection.query('SELECT nombre, correo FROM usuarios WHERE id = ?', [final_cliente_id]);
             const [planData] = await connection.query('SELECT nombre FROM planes WHERE id = ?', [plan_id]);
             const [emisorData] = await connection.query('SELECT nombre, ruc, direccion, telefono FROM configuracion');
@@ -102,12 +103,9 @@ router.post("/", async (req, res) => {
             doc.fontSize(10).font('Helvetica').text(`RUC: ${emisor.ruc}`, 200, 70, { align: 'right' });
             doc.text(emisor.direccion, 200, 85, { align: 'right' });
             doc.text(`Teléfono: ${emisor.telefono}`, 200, 100, { align: 'right' });
-
             doc.moveDown(4);
             doc.fontSize(18).font('Helvetica-Bold').text('Contrato de Servicios Publicitarios', { align: 'center' });
             doc.moveDown(2);
-
-            // --- DATOS DEL CLIENTE ---
             doc.fontSize(12).font('Helvetica').text(`Contrato ID: ${nuevoContratoId}`);
             doc.text(`Fecha de Emisión: ${new Date().toLocaleDateString('es-PE')}`);
             doc.moveDown();
@@ -115,48 +113,38 @@ router.post("/", async (req, res) => {
             doc.font('Helvetica').text(`   Nombre: ${cliente.nombre}`);
             doc.text(`   Email: ${cliente.correo}`);
             doc.moveDown(2);
-
-            // --- DETALLES DE LA CAMPAÑA (formato tabla) ---
             doc.font('Helvetica-Bold').text('Detalles del Servicio Contratado:');
-            const tableTop = doc.y + 10;
-            const itemX = 50;
-            const descX = 180;
-            const valueX = 450;
-            
-            function addRow(item, description, value) {
-                doc.fontSize(10).font('Helvetica-Bold').text(item, itemX, doc.y);
-                doc.font('Helvetica').text(description, descX, doc.y, { width: 250 });
-                if(value) doc.font('Helvetica-Bold').text(value, valueX, doc.y, { align: 'right' });
+            doc.moveDown();
+            const tableTop = doc.y;
+            doc.fontSize(10).font('Helvetica-Bold').text('Concepto', 50, tableTop).text('Detalle', 180, tableTop).text('Valor', 450, tableTop, { align: 'right' });
+            doc.moveTo(50, doc.y + 5).lineTo(550, doc.y + 5).strokeColor("#cccccc").stroke();
+            doc.moveDown(2);
+            function addRow(item, description, value = '') {
+                doc.font('Helvetica-Bold').text(item, 50, doc.y);
+                doc.font('Helvetica').text(description, 180, doc.y, { width: 250 });
+                doc.font('Helvetica-Bold').text(value, 450, doc.y, { align: 'right' });
                 doc.moveDown(1.5);
-                doc.moveTo(itemX, doc.y - 10).lineTo(550, doc.y - 10).strokeColor("#cccccc").stroke();
             }
-            
             addRow('Campaña', nombre_campana);
             addRow('Plan', planNombre);
             addRow('Periodo de Vigencia', `Del ${new Date(fecha_inicio).toLocaleDateString('es-PE')} al ${new Date(fecha_fin).toLocaleDateString('es-PE')}`);
             doc.moveDown();
+            doc.moveTo(50, doc.y).lineTo(550, doc.y).strokeColor("#cccccc").stroke();
+            doc.moveDown(0.5);
             addRow('MONTO TOTAL', '', `S/ ${parseFloat(monto_acordado).toFixed(2)}`);
-
             doc.moveDown(2);
-
-            // --- GUION ---
             doc.fontSize(12).font('Helvetica-Bold').text('Guion y Detalles del Anuncio:');
             doc.moveDown(0.5);
-            doc.fontSize(10).font('Helvetica').text(detalles_anuncio || 'No se especificaron detalles.', {
-                width: 500,
-                align: 'justify'
-            });
-
-            // --- FOOTER ---
-            doc.fontSize(8).text('Este documento es una representación oficial del acuerdo de servicios.', 50, 750, {
-                align: 'center', width: 500
-            });
+            doc.fontSize(10).font('Helvetica').text(detalles_anuncio || 'No se especificaron detalles.', { width: 500, align: 'justify' });
+            doc.fontSize(8).text('Este documento es una representación oficial del acuerdo de servicios.', 50, 750, { align: 'center', width: 500 });
+            // --- FIN DEL CONTENIDO DEL PDF ---
             
             doc.end();
-            stream.on('finish', () => resolve(`${process.env.BASE_URL}/uploads/contratos/${pdfName}`));
+
+            const finalPdfUrl = `${req.protocol}://${req.get('host')}/uploads/contratos/${pdfName}`;
+            stream.on('finish', () => resolve(finalPdfUrl));
             stream.on('error', reject);
         });
-        // --- FIN DE LA GENERACIÓN COMPLETA DEL PDF ---
 
         pdfUrl = await pdfPromise;
         await connection.query('UPDATE contratos_publicitarios SET pdf_url = ? WHERE id = ?', [pdfUrl, nuevoContratoId]);
@@ -170,6 +158,7 @@ router.post("/", async (req, res) => {
     } catch (err) {
         await connection.rollback();
         console.error("Error en la transacción:", err);
+        if (err.message.includes('Ya existe un usuario')) return res.status(409).json({ error: err.message });
         return res.status(500).json({ error: "Error interno del servidor durante la transacción." });
     } finally {
         connection.release();
@@ -180,19 +169,29 @@ router.post("/", async (req, res) => {
         const templateCliente = datosParaEmail.isNewUser ? 'bienvenida_nuevo_vendedor' : 'nuevo_contrato';
         const asuntoCliente = datosParaEmail.isNewUser ? `¡Bienvenido a Metrópoli Radio, ${datosParaEmail.cliente_nombre}!` : `Nuevo Contrato: ${nombre_campana}`;
         const htmlCliente = await procesarPlantilla(templateCliente, {
-            nombre_cliente: datosParaEmail.cliente_nombre, nombre_campana: nombre_campana,
-            pdfUrl: pdfUrl, passwordTemporal: datosParaEmail.passwordTemporal,
+            nombre_cliente: datosParaEmail.cliente_nombre,
+            nombre_campana: nombre_campana,
+            pdfUrl: pdfUrl,
+            passwordTemporal: datosParaEmail.passwordTemporal,
             fecha_inicio: new Date(fecha_inicio).toLocaleDateString('es-PE')
         });
         sendEmail({ to: datosParaEmail.cliente_email, subject: asuntoCliente, htmlContent: htmlCliente });
 
         const [[adminConfig]] = await db.query("SELECT valor_config FROM configuracion_correo WHERE clave_config = 'admin_email_notificaciones'");
         if (adminConfig && adminConfig.valor_config) {
-            const htmlAdmin = await procesarPlantilla('admin_nuevo_contrato', { /* datos para el admin */ });
+            const htmlAdmin = await procesarPlantilla('admin_nuevo_contrato', {
+                nombre_cliente: datosParaEmail.cliente_nombre,
+                email_cliente: datosParaEmail.cliente_email,
+                nombre_campana: nombre_campana,
+                nombre_plan: datosParaEmail.plan_nombre,
+                monto: monto_acordado,
+                fecha_inicio: new Date(fecha_inicio).toLocaleDateString('es-PE'),
+                fecha_fin: new Date(fecha_fin).toLocaleDateString('es-PE')
+            });
             sendEmail({ to: adminConfig.valor_config, subject: `Nuevo Contrato Registrado - ${datosParaEmail.cliente_nombre}`, htmlContent: htmlAdmin });
         }
     } catch (emailError) {
-        console.error("Contrato guardado, pero falló el envío de correos:", emailError);
+        console.error("Contrato guardado, pero falló el envío de correos post-transacción:", emailError);
     }
     
     res.status(201).json({
@@ -208,6 +207,7 @@ router.get("/", async (req, res) => {
     const [contratos] = await db.query(query);
     res.json(contratos);
   } catch (err) {
+    console.error("Error al obtener los contratos:", err);
     res.status(500).json({ error: "Error al obtener los contratos." });
   }
 });
@@ -220,6 +220,7 @@ router.get("/:id", async (req, res) => {
         if (contratos.length === 0) return res.status(404).json({ error: "Contrato no encontrado." });
         res.json(contratos[0]);
     } catch (err) {
+        console.error(`Error al obtener el contrato ${id}:`, err);
         res.status(500).json({ error: "Error interno del servidor." });
     }
 });
