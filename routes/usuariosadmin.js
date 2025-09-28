@@ -1,12 +1,15 @@
-// back-end-metropo/routes/usuariosadmin.js
-
 const express = require("express");
 const router = express.Router();
 const db = require("../db");
+const bcrypt = require('bcrypt'); // Necesario para encriptar la nueva contraseña
+const { verifyToken, isAdmin } = require('../middleware/authMiddleware');
 
-// Middleware de seguridad (muy recomendado para rutas de admin)
-// const { verificarToken, verificarAdmin } = require('../middleware/auth');
-// Para usarlo, añadirías verificarToken y verificarAdmin antes de async (req, res)
+// APLICAMOS LA SEGURIDAD A TODAS LAS RUTAS DE ESTE ARCHIVO
+router.use(verifyToken, isAdmin);
+
+// -------------------------------------------
+// --- RUTAS CRUD PARA GESTIÓN DE USUARIOS ---
+// -------------------------------------------
 
 // GET: Obtener la lista completa de usuarios
 router.get("/", async (req, res) => {
@@ -21,12 +24,40 @@ router.get("/", async (req, res) => {
   }
 });
 
+// POST: Crear un nuevo usuario (funcionalidad añadida)
+router.post('/', async (req, res) => {
+    const { nombre, correo, password, rol } = req.body;
+    
+    if (!nombre || !correo || !password || !rol) {
+        return res.status(400).json({ error: 'Todos los campos son obligatorios: nombre, correo, contraseña y rol.' });
+    }
+
+    try {
+        const [existingUser] = await db.query('SELECT id FROM usuarios WHERE correo = ?', [correo]);
+        if (existingUser.length > 0) {
+            return res.status(409).json({ error: 'Ya existe un usuario con este correo electrónico.' });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+        
+        const [result] = await db.query(
+            'INSERT INTO usuarios (nombre, correo, password, rol) VALUES (?, ?, ?, ?)',
+            [nombre, correo, hashedPassword, rol]
+        );
+
+        res.status(201).json({ message: 'Usuario creado exitosamente.', id: result.insertId });
+    } catch (err) {
+        console.error("Error al crear usuario desde el panel de admin:", err);
+        res.status(500).json({ error: 'Error interno del servidor al crear el usuario.' });
+    }
+});
+
+
 // PUT: Actualizar un usuario por su ID
 router.put("/:id", async (req, res) => {
   const { id } = req.params;
   const { nombre, correo, rol } = req.body;
 
-  // Validación simple de entrada
   if (!nombre || !correo || !rol) {
     return res.status(400).json({ error: "Faltan datos requeridos (nombre, correo, rol)." });
   }
@@ -44,7 +75,6 @@ router.put("/:id", async (req, res) => {
     res.json({ message: "Usuario actualizado correctamente." });
 
   } catch (err) {
-    // Manejar error de correo duplicado
     if (err.code === 'ER_DUP_ENTRY') {
         return res.status(409).json({ error: 'El correo electrónico ya está en uso por otro usuario.' });
     }
@@ -58,6 +88,11 @@ router.delete("/:id", async (req, res) => {
   const { id } = req.params;
 
   try {
+    // Medida de seguridad: No permitir eliminar al usuario con ID 1 (superadmin)
+    if (parseInt(id, 10) === 1) {
+        return res.status(403).json({ error: "No se puede eliminar al administrador principal." });
+    }
+
     const [result] = await db.query(
       "DELETE FROM usuarios WHERE id = ?", 
       [id]

@@ -1,6 +1,6 @@
 const nodemailer = require('nodemailer');
-const db = require('../db'); // Asegúrate de que la ruta a tu conexión DB es correcta
-const { decryptPassword } = require('./crypto'); // Importamos la función para desencriptar
+const db = require('../db');
+const { decryptPassword } = require('./crypto');
 
 // Función interna para obtener la configuración de correo activa desde la BD
 async function getMailConfig() {
@@ -20,11 +20,17 @@ async function getMailConfig() {
     let config = null;
 
     const isConfigValid = (prefix) => {
-      const password = decryptPassword(settings[`${prefix}_contrasena_encriptada`]);
-      return settings[`${prefix}_servidor`] && settings[`${prefix}_usuario`] && password;
+      try {
+        const passwordEncrypted = settings[`${prefix}_contrasena_encriptada`];
+        if (!passwordEncrypted) return false;
+        const password = decryptPassword(passwordEncrypted);
+        return settings[`${prefix}_servidor`] && settings[`${prefix}_usuario`] && password;
+      } catch (e) {
+        console.error(`Error al desencriptar o validar la configuración para ${prefix}:`, e.message);
+        return false;
+      }
     };
 
-    // Lógica de selección y fallback
     if (isConfigValid(activeProvider)) {
       config = buildConfig(settings, activeProvider);
     } else {
@@ -53,7 +59,7 @@ function buildConfig(settings, prefix) {
     return {
         host: settings[`${prefix}_servidor`],
         port: parseInt(settings[`${prefix}_puerto`], 10) || 465,
-        secure: (parseInt(settings[`${prefix}_puerto`], 10) || 465) === 465, // true for 465, false for other ports
+        secure: (parseInt(settings[`${prefix}_puerto`], 10) || 465) === 465,
         auth: {
             user: settings[`${prefix}_usuario`],
             pass: decryptPassword(settings[`${prefix}_contrasena_encriptada`]),
@@ -63,14 +69,14 @@ function buildConfig(settings, prefix) {
     };
 }
 
-
-// Función principal y pública para enviar el correo
-async function sendEmail({ to, subject, htmlContent }) {
+// --- FUNCIÓN PRINCIPAL Y PÚBLICA (ACTUALIZADA) ---
+// Ahora acepta un parámetro opcional 'attachments'
+async function sendEmail({ to, subject, htmlContent, attachments = [] }) {
   const config = await getMailConfig();
 
   if (!config) {
-    console.error("Envío de correo cancelado: No hay configuración válida.");
-    return; // No detenemos el flujo de la app, solo no enviamos el correo.
+    // Lanzamos un error para que el 'catch' en contratos_admin.js pueda registrarlo
+    throw new Error("Envío de correo cancelado: No hay configuración de correo válida.");
   }
 
   const transporter = nodemailer.createTransport({
@@ -85,13 +91,16 @@ async function sendEmail({ to, subject, htmlContent }) {
     to: to,
     subject: subject,
     html: htmlContent,
+    attachments: attachments, // <-- Se añade el array de adjuntos
   };
 
   try {
     const info = await transporter.sendMail(mailOptions);
-    console.log('Correo de bienvenida enviado con éxito:', info.messageId);
+    console.log('Correo enviado con éxito:', info.messageId);
   } catch (error) {
-    console.error('Error al enviar el correo de bienvenida:', error);
+    console.error('Error al enviar el correo:', error);
+    // Relanzamos el error para que el 'catch' que llama a esta función se entere del fallo.
+    throw error;
   }
 }
 

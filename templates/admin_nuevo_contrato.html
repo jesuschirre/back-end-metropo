@@ -4,15 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f1f5f9; }
-        .container { max-width: 600px; margin: 20px auto; background-color: #ffffff; border: 1px solid #e2e8f0; }
-        .header { background-color: #475569; color: white; padding: 20px; text-align: center; }
-        .header h1 { margin: 0; font-size: 22px; }
-        .content { padding: 20px; }
+        body { font-family: 'Helvetica', 'Arial', sans-serif; margin: 0; padding: 0; background-color: #f1f5f9; }
+        .container { max-width: 600px; margin: 20px auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .header { background-color: #1E88E5; color: white; padding: 20px; text-align: center; border-top-left-radius: 8px; border-top-right-radius: 8px; }
+        .header h1 { margin: 0; font-size: 24px; font-weight: bold; }
+        .content { padding: 30px; }
         .details-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        .details-table td { padding: 10px; border: 1px solid #e2e8f0; }
-        .details-table td:first-child { font-weight: bold; background-color: #f8fafc; width: 30%; }
-        .footer { background-color: #e2e8f0; padding: 15px; text-align: center; font-size: 12px; color: #64748b; }
+        .details-table td { padding: 12px; border: 1px solid #e2e8f0; font-size: 14px; }
+        .details-table td:first-child { font-weight: bold; background-color: #f8fafc; width: 30%; color: #1E88E5; }
+        .details-table td:last-child { color: #333333; }
+        .action-button { display: inline-block; margin-top: 20px; padding: 10px 20px; background-color: #1E88E5; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; }
+        .action-button:hover { background-color: #1565C0; }
+        .footer { background-color: #e2e8f0; padding: 15px; text-align: center; font-size: 12px; color: #64748b; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; }
     </style>
 </head>
 <body>
@@ -21,19 +24,23 @@
             <h1>Notificación: Nuevo Contrato Creado</h1>
         </div>
         <div class="content">
-            <p>Se ha registrado un nuevo contrato en el sistema. Estos son los detalles:</p>
+            <p>Estimado/a administrador/a,</p>
+            <p>Se ha registrado un nuevo contrato en el sistema Metrópoli. A continuación, se presentan los detalles:</p>
             <table class="details-table">
                 <tr><td>Cliente:</td><td>{{nombre_cliente}}</td></tr>
                 <tr><td>Email Cliente:</td><td>{{email_cliente}}</td></tr>
                 <tr><td>Campaña:</td><td>{{nombre_campana}}</td></tr>
                 <tr><td>Plan:</td><td>{{nombre_plan}}</td></tr>
+                <tr><td>Días de Emisión:</td><td>{{dias_emision}}</td></tr>
                 <tr><td>Monto:</td><td>S/ {{monto}}</td></tr>
                 <tr><td>Periodo:</td><td>Del {{fecha_inicio}} al {{fecha_fin}}</td></tr>
             </table>
-            <p>El contrato en PDF ha sido generado y enviado al cliente. Puedes gestionarlo desde el panel de administración.</p>
+            <p>El contrato en PDF ha sido generado y enviado al cliente. Puedes gestionarlo desde el panel de administración:</p>
+            <a href="{{panel_admin_url}}" class="action-button">Ir al Panel de Administración</a>
         </div>
         <div class="footer">
-            <p>Este es un mensaje automático del Sistema Metrópoli.</p>
+            <p>© {{current_year}} Metrópoli Radio. Todos los derechos reservados.</p>
+            <p>Este es un mensaje automático, por favor no respondas directamente.</p>
         </div>
     </div>
 </body>
