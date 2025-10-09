@@ -26,9 +26,8 @@ async function procesarPlantilla(nombrePlantilla, datos) {
     }
 }
 
-// -------------------------------------------
-// --- ENDPOINT PRINCIPAL PARA CREAR CONTRATOS ---
-// -------------------------------------------
+
+// ENDPOINT PRINCIPAL PARA CREAR CONTRATOS 
 
 router.post("/", async (req, res) => {
     const {
