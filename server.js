@@ -42,6 +42,7 @@ app.use('/api/configuracion', require('./routes/configuracionCorreo'));
 app.use('/api/planes', require('./routes/planes'));
 app.use('/api/admin/usuarios', require('./routes/usuariosadmin'));
 app.use('/api/contratos_admin', require('./routes/contratos_admin'));
+app.use('/api/contratosySoli', require('./routes/contratos_soli'))
 
 // --- AÑADE ESTA LÍNEA AQUÍ ---
 app.use('/api/consultas_admin', require('./routes/consultas_admin'));
