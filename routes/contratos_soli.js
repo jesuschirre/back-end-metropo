@@ -14,8 +14,6 @@ router.post("/soliCon", async (req, res) => {
       identificacion,
       nombre_publicidad,
       total_dias,
-      fecha_inicio,
-      costo_total,
       direccion
     } = req.body;
 
@@ -46,17 +44,16 @@ router.post("/soliCon", async (req, res) => {
     await db.query(
       `INSERT INTO contratos_publicidad 
       (id_anunciante, nombre_anunciante, ruc_dni_anunciante, nombre_sistema_publicitado, 
-       duracion_segundos, frecuencia_diaria, total_dias, fecha_inicio, 
-       costo_total, forma_pago, estado_contrato, direccion)
-      VALUES (?, ?, ?, ?, 30, 30, ?, ?, ?, 'pendiente', ?)`,
+      duracion_segundos, frecuencia_diaria, total_dias, fecha_inicio,
+      costo_total, forma_pago, estado_contrato, direccion)
+      VALUES (?, ?, ?, ?, 30, 30, ?, NOW(), ?, ?, 'pendiente', ?)`,
       [
         usuario_id,       // id_anunciante
         nombre,           // nombre_anunciante
         identificacion,   // ruc_dni_anunciante
         nombre_publicidad,// nombre_sistema_publicitado
         total_dias,       // total_dias
-        fecha_inicio,     // fecha_inicio (si lo mandas desde frontend)
-        costo_total,      // costo_total
+        monto,      // costo_total
         metodo_pago,      // forma_pago
         direccion         // direccion
       ]

@@ -65,7 +65,7 @@ router.post("/solicitar-vendedor", upload.single("comprobante_pago"), async (req
 router.get("/solicitudes-vendedor", [verifyToken, isAdmin], async (req, res) => {
     // ... (CÓDIGO ORIGINAL SIN CAMBIOS)
     try {
-        const [solicitudes] = await db.query(`SELECT s.id, s.usuario_id, u.nombre, u.correo, s.estado, s.fecha_solicitud, s.metodo_pago, s.monto, s.referencia_pago, s.comprobante_pago FROM solicitudes_vendedor s INNER JOIN usuarios u ON s.usuario_id = u.id ORDER BY s.fecha_solicitud DESC`);
+        const [solicitudes] = await db.query(`SELECT s.id, s.usuario_id, u.nombre, u.correo, s.estado, s.fecha_solicitud, s.metodo_pago, s.monto, s.referencia_pago, s.comprobante_pago FROM solicitudes_cliente s INNER JOIN usuarios u ON s.usuario_id = u.id ORDER BY s.fecha_solicitud DESC`);
         res.json(solicitudes);
     } catch (err) {
         console.error(err);
@@ -78,14 +78,13 @@ router.post("/solicitudes-vendedor/aceptar", [verifyToken, isAdmin], async (req,
     try {
         const { solicitud_id } = req.body;
         if (!solicitud_id) return res.status(400).json({ message: "Falta el ID de la solicitud" });
-        const [rows] = await db.query("SELECT * FROM solicitudes_vendedor WHERE id = ?", [solicitud_id]);
+        const [rows] = await db.query("SELECT * FROM solicitudes_cliente WHERE id = ?", [solicitud_id]);
         if (rows.length === 0) return res.status(404).json({ message: "No se encontró la solicitud" });
         const usuario_id = rows[0].usuario_id;
         const [[usuario]] = await db.query('SELECT nombre, correo FROM usuarios WHERE id = ?', [usuario_id]);
         if (!usuario) return res.status(404).json({ message: "El usuario asociado no fue encontrado." });
-        await db.query("UPDATE solicitudes_vendedor SET estado = 'aprobada' WHERE id = ?", [solicitud_id]);
-        await db.query("INSERT IGNORE INTO vendedores (usuario_id) VALUES (?)", [usuario_id]);
-        await db.query("UPDATE usuarios SET rol = 'vendedor' WHERE id = ?", [usuario_id]);
+        await db.query("UPDATE solicitudes_cliente SET estado = 'aprobado' WHERE id = ?", [solicitud_id]);
+        await db.query("UPDATE usuarios SET rol = 'cliente' WHERE id = ?", [usuario_id]);
         try {
             const templatePath = path.join(__dirname, '..', 'templates', 'applicationApproved.html');
             let htmlContent = fs.readFileSync(templatePath, 'utf8').replace('{{nombre}}', usuario.nombre);
@@ -105,12 +104,13 @@ router.post("/solicitudes-vendedor/rechazar", [verifyToken, isAdmin], async (req
     try {
         const { solicitud_id, motivo } = req.body;
         if (!solicitud_id || !motivo) return res.status(400).json({ message: "Falta el ID de la solicitud y el motivo del rechazo." });
-        const [rows] = await db.query("SELECT * FROM solicitudes_vendedor WHERE id = ?", [solicitud_id]);
+        const [rows] = await db.query("SELECT * FROM solicitudes_cliente WHERE id = ?", [solicitud_id]);
         if (rows.length === 0) return res.status(404).json({ message: "No se encontró la solicitud" });
         const usuario_id = rows[0].usuario_id;
         const [[usuario]] = await db.query('SELECT nombre, correo FROM usuarios WHERE id = ?', [usuario_id]);
         if (!usuario) return res.status(404).json({ message: "El usuario asociado no fue encontrado." });
-        await db.query("UPDATE solicitudes_vendedor SET estado = 'rechazada' WHERE id = ?", [solicitud_id]);
+        await db.query("DELETE FROM solicitudes_cliente WHERE id = ?", [solicitud_id]);
+        await db.query("DELETE FROM contratos_publicidad WHERE id_anunciante = ?", [usuario_id]);
         try {
             const templatePath = path.join(__dirname, '..', 'templates', 'applicationRejected.html');
             let htmlContent = fs.readFileSync(templatePath, 'utf8');
