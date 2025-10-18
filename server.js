@@ -35,24 +35,21 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/users', require('./routes/users'));
 app.use('/solicitudes', require('./routes/solicitudes'));
-app.use('/productos', require('./routes/producto'));
-app.use('/categorias', require('./routes/categorias'));
 app.use('/api/configuracion', require('./routes/configuracionCorreo'));
 app.use('/api/planes', require('./routes/planes'));
 app.use('/api/admin/usuarios', require('./routes/usuariosadmin'));
 app.use('/api/contratos_admin', require('./routes/contratos_admin'));
-app.use('/api/contratosySoli', require('./routes/contratos_soli'))
+app.use('/api/contratosySoli', require('./routes/contratos_soli'));
+app.use('/api/cliente', require('./routes/cliente'))
 
 // --- AÑADE ESTA LÍNEA AQUÍ ---
 app.use('/api/consultas_admin', require('./routes/consultas_admin'));
-// --------------------------------
 app.use('/api/planes_admin', require('./routes/planes_admin')); // <--- AÑADE ESTA LÍNEA
 app.use('/api/configuracion_admin', require('./routes/configuracion_admin')); // <--- AÑADE ESTA 
 
 app.use('/api/dashboard_admin', require('./routes/dashboard_admin')); // <--- AÑADE ESTA LÍNEA
 
-// =================================================================
-// 5. INICIO DEL SERVIDOR
-// =================================================================
+
+// INICIO DEL SERVIDOR
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Servidor corriendo en http://localhost:${PORT}`));

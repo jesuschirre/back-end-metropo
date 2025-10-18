@@ -19,7 +19,7 @@ router.get('/stats', async (req, res) => {
                 (SELECT COUNT(id) FROM usuarios WHERE rol != 'admin') as totalUsuarios,
                 (SELECT COUNT(id) FROM contratos_publicitarios) as totalContratos,
                 (SELECT COUNT(id) FROM contratos_publicitarios WHERE estado = 'Activo') as contratosActivos,
-                (SELECT COUNT(id) FROM solicitudes_vendedor WHERE estado = 'pendiente') as solicitudesPendientes,
+                (SELECT COUNT(id) FROM solicitudes_cliente WHERE estado = 'pendiente') as solicitudesPendientes,
                 (SELECT SUM(monto_acordado) FROM contratos_publicitarios 
                  WHERE DATE_FORMAT(fecha_creacion, '%Y-%m') = DATE_FORMAT(NOW(), '%Y-%m')) as ingresosMesActual
         `);

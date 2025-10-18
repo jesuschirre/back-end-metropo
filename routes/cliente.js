@@ -59,5 +59,14 @@ router.get("/banners", async (req, res) => {
   }
 });
 
+router.get("/clientes", async (req, res) =>{
+  try {
+    const [rows] = await db.query("SELECT id, usuario_id FROM cliente ");
+    res.json(rows)
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error al obtener los clientes" });
+  }
+})
 
 module.exports = router;
