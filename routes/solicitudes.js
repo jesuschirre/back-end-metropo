@@ -20,18 +20,38 @@ router.get("/solicitudes-vendedor", [verifyToken, isAdmin], async (req, res) => 
 });
 
 router.post("/solicitudes-vendedor/aceptar", [verifyToken, isAdmin], async (req, res) => {
-    // ... (CÓDIGO ORIGINAL SIN CAMBIOS)
     try {
         const { solicitud_id } = req.body;
         if (!solicitud_id) return res.status(400).json({ message: "Falta el ID de la solicitud" });
+
         const [rows] = await db.query("SELECT * FROM solicitudes_cliente WHERE id = ?", [solicitud_id]);
         if (rows.length === 0) return res.status(404).json({ message: "No se encontró la solicitud" });
+
         const usuario_id = rows[0].usuario_id;
+
         const [[usuario]] = await db.query('SELECT nombre, correo FROM usuarios WHERE id = ?', [usuario_id]);
         if (!usuario) return res.status(404).json({ message: "El usuario asociado no fue encontrado." });
+
+        // Obtener fechas de contratos_publicidad para este usuario
+        const [contratos] = await db.query(
+            "SELECT fecha_inicio, fecha_fin FROM contratos_publicidad WHERE id_anunciante = ?", 
+            [usuario_id]
+        );
+
+        if (contratos.length === 0) {
+            return res.status(404).json({ message: "No se encontró contrato de publicidad para el usuario." });
+        }
+
+        const { fecha_inicio, fecha_fin } = contratos[0];
+
         await db.query("UPDATE solicitudes_cliente SET estado = 'aprobado' WHERE id = ?", [solicitud_id]);
         await db.query("UPDATE usuarios SET rol = 'cliente' WHERE id = ?", [usuario_id]);
-        await db.query("INSERT INTO cliente (usuario_id) VALUES (?)", [usuario_id])
+
+        // Insertar cliente con fechas obtenidas
+        await db.query("INSERT INTO cliente (usuario_id, fecha_inicio, fecha_fin, estado) VALUES (?, ?, ?, 'activo')", 
+            [usuario_id, fecha_inicio, fecha_fin]
+        );
+
         try {
             const templatePath = path.join(__dirname, '..', 'templates', 'applicationApproved.html');
             let htmlContent = fs.readFileSync(templatePath, 'utf8').replace('{{nombre}}', usuario.nombre);
@@ -39,7 +59,9 @@ router.post("/solicitudes-vendedor/aceptar", [verifyToken, isAdmin], async (req,
         } catch (emailError) {
             console.error("Solicitud aprobada, pero el correo de notificación falló:", emailError);
         }
+
         res.json({ message: `Solicitud aceptada. Se ha notificado a ${usuario.nombre} por correo.` });
+
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: "Error al aceptar la solicitud" });

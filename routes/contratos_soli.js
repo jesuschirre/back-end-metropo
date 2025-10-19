@@ -42,11 +42,11 @@ router.post("/soliCon", async (req, res) => {
 
     // Insertar contrato de publicidad
     await db.query(
-      `INSERT INTO contratos_publicidad 
+     `INSERT INTO contratos_publicidad 
       (id_anunciante, nombre_anunciante, ruc_dni_anunciante, nombre_sistema_publicitado, 
-      duracion_segundos, frecuencia_diaria, total_dias, fecha_inicio,
+      duracion_segundos, frecuencia_diaria, total_dias, fecha_inicio, fecha_fin,
       costo_total, forma_pago, estado_contrato, direccion)
-      VALUES (?, ?, ?, ?, 30, 30, ?, NOW(), ?, ?, 'pendiente', ?)`,
+      VALUES (?, ?, ?, ?, 30, 30, ?, NOW(), DATE_ADD(NOW(), INTERVAL 30 DAY), ?, ?, 'activo', ?)`,
       [
         usuario_id,       // id_anunciante
         nombre,           // nombre_anunciante

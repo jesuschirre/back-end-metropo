@@ -23,7 +23,6 @@ app.use(cors());
 
 // Permitir que Express procese cuerpos de solicitud en formato JSON.
 app.use(express.json());
-
 // Servir archivos estáticos desde la carpeta 'uploads'.
 // Esto es CRUCIAL para que los PDFs (y otras imágenes) sean accesibles desde el navegador.
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
