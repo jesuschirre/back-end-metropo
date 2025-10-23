@@ -20,4 +20,3 @@ function verificarAdmin(req, res, next) {
 }
 
 module.exports = { verificarToken, verificarAdmin };
-  

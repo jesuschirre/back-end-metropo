@@ -41,21 +41,25 @@ router.post("/soliCon", async (req, res) => {
     );
 
     // Insertar contrato de publicidad
+    // Opción 2: Mejorar la flexibilidad usando variables para campos clave.
     await db.query(
-     `INSERT INTO contratos_publicidad 
-      (id_anunciante, nombre_anunciante, ruc_dni_anunciante, nombre_sistema_publicitado, 
-      duracion_segundos, frecuencia_diaria, total_dias, fecha_inicio, fecha_fin,
-      costo_total, forma_pago, estado_contrato, direccion)
-      VALUES (?, ?, ?, ?, 30, 30, ?, NOW(), DATE_ADD(NOW(), INTERVAL 30 DAY), ?, ?, 'activo', ?)`,
+      `INSERT INTO contratos_publicidad 
+        (id_anunciante, nombre_anunciante, ruc_dni_anunciante, nombre_sistema_publicitado, 
+        duracion_segundos, frecuencia_diaria, total_dias, fecha_inicio, fecha_fin,
+        costo_total, forma_pago, estado_contrato, direccion)
+        VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), DATE_ADD(NOW(), INTERVAL ? DAY), ?, ?, 'activo', ?)`,
       [
-        usuario_id,       // id_anunciante
-        nombre,           // nombre_anunciante
-        identificacion,   // ruc_dni_anunciante
-        nombre_publicidad,// nombre_sistema_publicitado
-        total_dias,       // total_dias
-        monto,      // costo_total
-        metodo_pago,      // forma_pago
-        direccion         // direccion
+        usuario_id,         // 1. id_anunciante
+        nombre,             // 2. nombre_anunciante
+        identificacion,     // 3. ruc_dni_anunciante
+        nombre_publicidad,  // 4. nombre_sistema_publicitado
+        30,                 // 5. duracion_segundos (hardcodeado a 30 en el array)
+        30,                 // 6. frecuencia_diaria (hardcodeado a 30 en el array)
+        total_dias,         // 7. total_dias
+        total_dias,         // 8. total_dias (para la función DATE_ADD)
+        monto,              // 9. costo_total
+        metodo_pago,        // 10. forma_pago
+        direccion           // 11. direccion
       ]
     );
 
