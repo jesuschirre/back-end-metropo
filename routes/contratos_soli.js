@@ -24,12 +24,12 @@ router.post("/soliCon", async (req, res) => {
 
     // Verificar si el usuario ya tiene una solicitud pendiente
     const [solicitud] = await db.query(
-      "SELECT * FROM solicitudes_cliente WHERE usuario_id = ? AND estado = 'pendiente'",
+      "SELECT * FROM solicitudes_cliente WHERE usuario_id = ?",
       [usuario_id]
     );
 
     if (solicitud.length > 0) {
-      return res.status(409).json({ message: "Ya tienes una solicitud pendiente" });
+      return res.status(409).json({ message: "Ya tienes una solicitud" });
     }
 
     // Insertar solicitud del cliente
