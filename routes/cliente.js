@@ -116,7 +116,7 @@ router.delete("/eliminar/:id", async (req, res) => {
 router.get("/dash", async (req, res) => {
   try {
     const [result] = await db.query("SELECT COUNT(*) AS total_registros FROM usuarios");
-    
+
     // Accedemos al valor de la consulta
     const total = result[0].total_registros;
 
