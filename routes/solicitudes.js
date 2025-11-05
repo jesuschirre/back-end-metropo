@@ -6,10 +6,9 @@ const path = require("path");
 const { sendEmail } = require('../utils/mailer');
 const PDFDocument = require('pdfkit');
 const fss = require('fs').promises; // Usamos la versión de promesas de fs
-
-
 // <-- ¡NUEVO! IMPORTAMOS LOS GUARDIANES
 const { verifyToken, isAdmin } = require('../middleware/authMiddleware');
+const { generarPDFContrato } = require ('../middleware/generaraPDF')
 
 // --- RUTAS PROTEGIDAS (CON GUARDIANES) ---
 router.get("/solicitudes-vendedor", [verifyToken, isAdmin], async (req, res) => {
@@ -24,7 +23,7 @@ router.get("/solicitudes-vendedor", [verifyToken, isAdmin], async (req, res) => 
 });
 
 // La función que ya proporcionaste para generar el PDF
-async function generarPDFContrato(nuevoContratoId, connection, req, datosContrato) {
+async function generarPDFContratos(nuevoContratoId, connection, req, datosContrato) {
     const {
         cliente_id, plan_id, nombre_campana, fecha_inicio, fecha_fin,
         monto_acordado, detalles_anuncio, precio_base, descuento, dias_emision
@@ -138,8 +137,7 @@ async function generarPDFContrato(nuevoContratoId, connection, req, datosContrat
 }
 
 router.post("/solicitudes-vendedor/aceptar", [verifyToken, isAdmin], async (req, res) => {
-    let pdfUrl = null; 
-
+    let pdfUrl = null;
     try {
         const { solicitud_id } = req.body;
         if (!solicitud_id) return res.status(400).json({ message: "Falta el ID de la solicitud" });
@@ -154,10 +152,10 @@ router.post("/solicitudes-vendedor/aceptar", [verifyToken, isAdmin], async (req,
         const [[usuario]] = await db.query('SELECT nombre, correo FROM usuarios WHERE id = ?', [usuario_id]);
         if (!usuario) return res.status(404).json({ message: "El usuario asociado no fue encontrado." });
 
+
         // 2. OBTENER DATOS DEL CONTRATO EXISTENTE Y PREPARAR DATOS PARA EL PDF
-   
         const [contratos] = await db.query(
-            "SELECT id_anunciante, fecha_inicio, fecha_fin, costo_total FROM contratos_publicidad WHERE id_anunciante = ?", 
+            "SELECT id_anunciante, plan_id, fecha_inicio, fecha_fin, costo_total FROM contratos_publicitarios WHERE id_anunciante = ?", 
             [usuario_id]
         );
 
@@ -167,11 +165,11 @@ router.post("/solicitudes-vendedor/aceptar", [verifyToken, isAdmin], async (req,
         
         const contratoExistente = contratos[0];
         
-        // Simular datos del contrato para la función generarPDFContrato.
-        // Los campos FALTANTES se rellenan con datos de la solicitud o valores por defecto.
+        const ContratoID = contratos.id;
+
         const datosContratoPDF = {
             cliente_id: usuario_id,
-            plan_id: 1, // <--- AJUSTAR: Obtener el ID del Plan si es necesario
+            plan_id: contratos.plan_id, // <--- AJUSTAR: Obtener el ID del Plan si es necesario
             nombre_campana: `Contrato ${usuario.nombre}`, 
             fecha_inicio: contratoExistente.fecha_inicio,
             fecha_fin: contratoExistente.fecha_fin,
@@ -186,6 +184,13 @@ router.post("/solicitudes-vendedor/aceptar", [verifyToken, isAdmin], async (req,
             dias_emision: ['Lunes', 'Miércoles', 'Viernes'] 
         };
 
+
+        // Generar PDF
+        const { pdfUrl, pdfPath, pdfName } = await generarPDFContrato(ContratoID, connection, req, datosContratoPDF);
+
+        // Simular datos del contrato para la función generarPDFContrato.
+        // Los campos FALTANTES se rellenan con datos de la solicitud o valores por defecto.
+        
         // 3. GENERAR EL PDF y obtener la URL
         const pdfResult = await generarPDFContrato(
             usuario_id, 
@@ -205,21 +210,8 @@ router.post("/solicitudes-vendedor/aceptar", [verifyToken, isAdmin], async (req,
         await db.query("UPDATE solicitudes_cliente SET estado = 'aprobado' WHERE id = ?", [solicitud_id]);
         await db.query("UPDATE usuarios SET rol = 'cliente' WHERE id = ?", [usuario_id]);
 
-        // 6. Insertar cliente
-        await db.query("INSERT INTO cliente (usuario_id, fecha_inicio, fecha_fin, estado) VALUES (?, ?, ?, 'activo')", 
-            [usuario_id, contratoExistente.fecha_inicio, contratoExistente.fecha_fin]
-        );
 
-        // 7. Envío de correo electrónico de notificación (sin cambios)
-        try {
-            const templatePath = path.join(__dirname, '..', 'templates', 'applicationApproved.html');
-            let htmlContent = fs.readFileSync(templatePath, 'utf8').replace('{{nombre}}', usuario.nombre);
-            sendEmail({ to: usuario.correo, subject: '¡Tu solicitud ha sido aprobada!', htmlContent: htmlContent });
-        } catch (emailError) {
-            console.error("Solicitud aprobada, pero el correo de notificación falló:", emailError);
-        }
-
-        // 8. Respuesta final
+        // 6. Respuesta final
         res.json({ 
             message: `Solicitud aceptada. Contrato PDF guardado en la DB.`,
             pdf_url: pdfUrl 
