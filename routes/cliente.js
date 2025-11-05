@@ -86,11 +86,14 @@ router.delete("/eliminar/:id", async (req, res) => {
 
     const usuario_id_a_eliminar = rows[0].usuario_id;
     
-    // 3. ELIMINAR registros dependientes (por el usuario_id)
+    // ELIMINAR registros dependientes (por el usuario_id)
     await db.query (
       'DELETE FROM contratos_publicidad WHERE id_anunciante = ?',
       [usuario_id_a_eliminar]
     );
+
+    // Actualiza el rol en la tabla usuarios a "usuario"
+    await db.query("UPDATE usuarios SET rol = 'usuario' WHERE id = ?", [usuario_id_a_eliminar]);
     
     await db.query(
       'DELETE FROM solicitudes_cliente WHERE usuario_id = ?',
@@ -102,7 +105,6 @@ router.delete("/eliminar/:id", async (req, res) => {
         'DELETE FROM cliente WHERE id = ?',
         [id]
     );
-    
     // 5. RESPUESTA EXITOSA (204 No Content es estándar para DELETE)
     res.status(204).send();
 
@@ -113,18 +115,26 @@ router.delete("/eliminar/:id", async (req, res) => {
   }
 });
 
+
+// 🧮 Ruta para obtener estadísticas generales
 router.get("/dash", async (req, res) => {
   try {
     const [result] = await db.query("SELECT COUNT(*) AS total_registros FROM usuarios");
-
+    
     // Accedemos al valor de la consulta
     const total = result[0].total_registros;
 
-    // Enviamos la respuesta al cliente
-    res.json({ total_registros: total });
+    // ✅ 4. Enviar respuesta al cliente
+    res.json({
+      mensaje: " Datos obtenidos correctamente",
+      total_usuarios: totalUsuarios,
+      total_clientes: totalClientes,
+    });
   } catch (error) {
-    console.error("Error al obtener número de registros:", error);
-    res.status(500).json({ error: "Error al obtener número de registros" });
+    console.error("❌ Error al obtener número de registros:", error);
+    res
+      .status(500)
+      .json({ error: "Error al obtener número de registros", detalle: error.message });
   }
 });
 

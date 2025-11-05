@@ -2,34 +2,16 @@ const express = require("express");
 const router = express.Router();
 const db = require("../db");
 
-// soli
 router.post("/soliCon", async (req, res) => {
   try {
     const {
-      usuario_id,
-      metodo_pago,
-      monto,
-      comprobante_pago,
-      nombre,
-      identificacion,
-      nombre_publicidad,
-      total_dias,
-      direccion
+      cliente_id, plan_id, nombre_campana, fecha_inicio, monto_acordado,
+      tipo_contrato, contrato_padre_id, detalles_anuncio, tags, precio_base,
+      descuento, dias_emision, anuncios_por_dia, metodo_pago, comprobante_pago
     } = req.body;
 
-    // Validar campos obligatorios
-    if (!usuario_id || !metodo_pago || !monto || !comprobante_pago) {
-      return res.status(400).json({ message: "Faltan datos obligatorios" });
-    }
-
-    // Verificar si el usuario ya tiene una solicitud pendiente
-    const [solicitud] = await db.query(
-      "SELECT * FROM solicitudes_cliente WHERE usuario_id = ?",
-      [usuario_id]
-    );
-
-    if (solicitud.length > 0) {
-      return res.status(409).json({ message: "Ya tienes una solicitud" });
+    if (!plan_id || !nombre_campana || !fecha_inicio || !monto_acordado) {
+      return res.status(400).json({ error: "Faltan campos obligatorios." });
     }
 
     // Insertar solicitud del cliente
@@ -37,39 +19,53 @@ router.post("/soliCon", async (req, res) => {
       `INSERT INTO solicitudes_cliente 
       (usuario_id, metodo_pago, comprobante_pago, monto, fecha_solicitud, estado)
       VALUES (?, ?, ?, ?, NOW(), 'pendiente')`,
-      [usuario_id, metodo_pago, comprobante_pago, monto]
+      [cliente_id, metodo_pago, comprobante_pago, monto_acordado]
     );
 
-    // Insertar contrato de publicidad
-    // Opción 2: Mejorar la flexibilidad usando variables para campos clave.
-    await db.query(
-      `INSERT INTO contratos_publicidad 
-        (id_anunciante, nombre_anunciante, ruc_dni_anunciante, nombre_sistema_publicitado, 
-        duracion_segundos, frecuencia_diaria, total_dias, fecha_inicio, fecha_fin,
-        costo_total, forma_pago, estado_contrato, direccion)
-        VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), DATE_ADD(NOW(), INTERVAL ? DAY), ?, ?, 'activo', ?)`,
-      [
-        usuario_id,         // 1. id_anunciante
-        nombre,             // 2. nombre_anunciante
-        identificacion,     // 3. ruc_dni_anunciante
-        nombre_publicidad,  // 4. nombre_sistema_publicitado
-        30,                 // 5. duracion_segundos (hardcodeado a 30 en el array)
-        30,                 // 6. frecuencia_diaria (hardcodeado a 30 en el array)
-        total_dias,         // 7. total_dias
-        total_dias,         // 8. total_dias (para la función DATE_ADD)
-        monto,              // 9. costo_total
-        metodo_pago,        // 10. forma_pago
-        direccion           // 11. direccion
-      ]
-    );
+    // Calcular fecha_fin (30 días después)
+    const fechaFin = new Date(fecha_inicio);
+    fechaFin.setDate(fechaFin.getDate() + 30);
+
+    const diasEmisionJSON = JSON.stringify(dias_emision || []);
+
+    // Insertar contrato publicitario
+    const queryContrato = `
+      INSERT INTO contratos_publicitarios 
+      (cliente_id, plan_id, nombre_campana, fecha_inicio, fecha_fin, monto_acordado,
+       estado, tipo_contrato, contrato_padre_id, detalles_anuncio, tags,
+       fecha_creacion, fecha_actualizacion, duracion_valor, duracion_unidad,
+       pdf_url, precio_base, descuento, dias_emision, anuncios_por_dia)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), ?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    await db.query(queryContrato, [
+      cliente_id,                  // 1
+      plan_id,                     // 2
+      nombre_campana,              // 3
+      fecha_inicio,                // 4
+      fechaFin.toISOString().slice(0, 10), // 5
+      monto_acordado,              // 6
+      "Pendiente_Activacion",      // 7
+      tipo_contrato,               // 8
+      contrato_padre_id || null,   // 9
+      detalles_anuncio,            // 10
+      tags,                        // 11
+      0,                           // 12 duracion_valor
+      "dias",                      // 13 duracion_unidad (usa texto)
+      null,                        // 14 pdf_url
+      parseFloat(precio_base) || 0, // 15
+      parseFloat(descuento) || 0,   // 16
+      diasEmisionJSON,             // 17
+      parseInt(anuncios_por_dia) || 0 // 18
+    ]);
 
     res.status(201).json({
-      message: "¡Solicitud enviada correctamente!",
+      message: "✅ Solicitud y contrato registrados correctamente. Pendiente de aprobación."
     });
 
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Error al enviar la solicitud" });
+    console.error("Error en /soliCon:", err);
+    res.status(500).json({ message: "Error al registrar la solicitud o el contrato." });
   }
 });
 
