@@ -99,41 +99,64 @@ router.post("/solicitudes-vendedor/aceptar", [verifyToken, isAdmin], async (req,
 });
 
 router.post("/solicitudes-vendedor/rechazar", [verifyToken, isAdmin], async (req, res) => {
-    // ... (CÓDIGO ORIGINAL SIN CAMBIOS)
     try {
         const { solicitud_id, motivo } = req.body;
-        if (!solicitud_id || !motivo) return res.status(400).json({ message: "Falta el ID de la solicitud y el motivo del rechazo." });
-        const [rows] = await db.query("SELECT * FROM solicitudes_cliente WHERE id = ?", [solicitud_id]);
-        if (rows.length === 0) return res.status(404).json({ message: "No se encontró la solicitud" });
-        const usuario_id = rows[0].usuario_id;
-        const [[usuario]] = await db.query('SELECT nombre, correo FROM usuarios WHERE id = ?', [usuario_id]);
-        if (!usuario) return res.status(404).json({ message: "El usuario asociado no fue encontrado." });
-        await db.query("DELETE FROM solicitudes_cliente WHERE id = ?", [solicitud_id]);
-        
-        const [idcontrato] = await db.query(
-        `SELECT idContrato FROM solicitudes_cliente WHERE id = ? LIMIT 1`, [solicitud_id]
-        );
 
-        if (idcontrato.length === 0 || !idcontrato[0].idContrato) {
-        return res.status(404).json({ message: "❌ No se encontró ningún contrato asociado a esta solicitud." });
+        if (!solicitud_id || !motivo) {
+            return res.status(400).json({ message: "Falta el ID de la solicitud o el motivo del rechazo." });
         }
 
-        const contratoId = idcontrato[0].idContrato;
+        // 1️⃣ Obtener la solicitud antes de eliminarla
+        const [rows] = await db.query("SELECT * FROM solicitudes_cliente WHERE id = ?", [solicitud_id]);
+        if (rows.length === 0) {
+            return res.status(404).json({ message: "No se encontró la solicitud." });
+        }
 
-        await db.query("DELETE FROM contratos_publicitarios WHERE id = ?", [contratoId]);
+        const solicitud = rows[0];
+        const usuario_id = solicitud.usuario_id;
+        const contratoId = solicitud.idContrato; // Ya lo tenemos aquí antes de borrar
+
+        // 2️⃣ Obtener los datos del usuario
+        const [[usuario]] = await db.query("SELECT nombre, correo FROM usuarios WHERE id = ?", [usuario_id]);
+        if (!usuario) {
+            return res.status(404).json({ message: "El usuario asociado no fue encontrado." });
+        }
+
+        // 3️⃣ Eliminar la solicitud
+        await db.query("DELETE FROM solicitudes_cliente WHERE id = ?", [solicitud_id]);
+
+        // 4️⃣ Eliminar el contrato asociado si existe
+        if (contratoId) {
+            await db.query("DELETE FROM contratos_publicitarios WHERE id = ?", [contratoId]);
+        }
+
+        // 5️⃣ Enviar correo de notificación
         try {
             const templatePath = path.join(__dirname, '..', 'templates', 'applicationRejected.html');
             let htmlContent = fs.readFileSync(templatePath, 'utf8');
-            htmlContent = htmlContent.replace('{{nombre}}', usuario.nombre).replace('{{motivo}}', motivo);
-            sendEmail({ to: usuario.correo, subject: 'Actualización sobre tu solicitud de vendedor', htmlContent: htmlContent });
+            htmlContent = htmlContent
+                .replace('{{nombre}}', usuario.nombre)
+                .replace('{{motivo}}', motivo);
+
+            await sendEmail({
+                to: usuario.correo,
+                subject: 'Actualización sobre tu solicitud de vendedor',
+                htmlContent
+            });
         } catch (emailError) {
             console.error("Solicitud rechazada, pero el correo de notificación falló:", emailError);
         }
-        res.json({ message: `Solicitud rechazada. Se ha notificado a ${usuario.nombre} con el motivo proporcionado.` });
+
+        // 6️⃣ Respuesta final
+        res.json({
+            message: `Solicitud rechazada. Se ha notificado a ${usuario.nombre} con el motivo proporcionado.`
+        });
+
     } catch (err) {
         console.error(err);
-        res.status(500).json({ message: "Error al rechazar la solicitud" });
+        res.status(500).json({ message: "Error al rechazar la solicitud." });
     }
 });
+
 
 module.exports = router;
