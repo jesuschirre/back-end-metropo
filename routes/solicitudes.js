@@ -109,7 +109,18 @@ router.post("/solicitudes-vendedor/rechazar", [verifyToken, isAdmin], async (req
         const [[usuario]] = await db.query('SELECT nombre, correo FROM usuarios WHERE id = ?', [usuario_id]);
         if (!usuario) return res.status(404).json({ message: "El usuario asociado no fue encontrado." });
         await db.query("DELETE FROM solicitudes_cliente WHERE id = ?", [solicitud_id]);
-        await db.query("DELETE FROM contratos_publicidad WHERE id_anunciante = ?", [usuario_id]);
+        
+        const [idcontrato] = await db.query(
+        `SELECT idContrato FROM solicitudes_cliente WHERE id = ? LIMIT 1`, [solicitud_id]
+        );
+
+        if (idcontrato.length === 0 || !idcontrato[0].idContrato) {
+        return res.status(404).json({ message: "❌ No se encontró ningún contrato asociado a esta solicitud." });
+        }
+
+        const contratoId = idcontrato[0].idContrato;
+
+        await db.query("DELETE FROM contratos_publicitarios WHERE id = ?", [contratoId]);
         try {
             const templatePath = path.join(__dirname, '..', 'templates', 'applicationRejected.html');
             let htmlContent = fs.readFileSync(templatePath, 'utf8');
