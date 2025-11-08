@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 
-// Guardia 1: Revisa si el token es válido
+// Guardia 1: Revisa si el token es válido (Esta ya estaba bien)
 const verifyToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1]; // Formato "Bearer TOKEN"
@@ -18,7 +18,7 @@ const verifyToken = (req, res, next) => {
   });
 };
 
-// Guardia 2: Revisa si el usuario es Admin
+// Guardia 2: Revisa si el usuario es Admin (Esta ya estaba bien)
 const isAdmin = (req, res, next) => {
   if (req.user && req.user.rol === 'admin') {
     next();
@@ -27,4 +27,36 @@ const isAdmin = (req, res, next) => {
   }
 };
 
-module.exports = { verifyToken, isAdmin };
+// ===================================================================
+// --- AÑADE ESTAS DOS NUEVAS FUNCIONES AQUÍ ---
+// ===================================================================
+
+// Guardia 3: Revisa si el usuario es Locutor
+const isLocutor = (req, res, next) => {
+  if (req.user && req.user.rol === 'locutor') {
+    next();
+  } else {
+    res.status(403).json({ error: 'Acceso denegado. Se requiere rol de Locutor.' });
+  }
+};
+
+// Guardia 4: Revisa si el usuario es Locutor O Administrador
+const isLocutorOrAdmin = (req, res, next) => {
+  if (req.user && (req.user.rol === 'locutor' || req.user.rol === 'admin')) {
+    next();
+  } else {
+    res.status(403).json({ error: "Acceso denegado. Se requiere rol de Locutor o Administrador." });
+  }
+};
+
+
+// ===================================================================
+// --- ¡CAMBIO FINAL Y MÁS IMPORTANTE! ---
+// Asegúrate de exportar TODAS las funciones.
+// ===================================================================
+module.exports = { 
+  verifyToken, 
+  isAdmin,
+  isLocutor,        // <-- Añade esta
+  isLocutorOrAdmin  // <-- Añade esta
+};

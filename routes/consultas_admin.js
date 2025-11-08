@@ -1,6 +1,10 @@
 const express = require("express");
 const router = express.Router();
-const axios = require('axios'); 
+const axios = require('axios'); // La herramienta que acabamos de instalar
+const { verifyToken, isAdmin } = require('../middleware/authMiddleware');
+
+// Protegemos esta ruta para que solo los administradores puedan usarla
+router.use(verifyToken, isAdmin);
 
 /**
  * @route   GET /api/consultas_admin/documento/:numero
