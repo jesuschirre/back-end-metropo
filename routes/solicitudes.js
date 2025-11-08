@@ -87,6 +87,10 @@ router.post("/solicitudes-vendedor/aceptar", [verifyToken, isAdmin], async (req,
     await db.query("UPDATE solicitudes_cliente SET estado = 'aprobado' WHERE id = ?", [solicitud_id]);
     await db.query("UPDATE usuarios SET rol = 'cliente' WHERE id = ?", [usuario_id]);
 
+    await db.query("INSERT INTO locutor_tareas (contrato_id, locutor_id, estado, fecha_creacion, fecha_actualizacion) VALUES (?, 78, 'pendiente',? , ?)",
+      [contratoId, contratoExistente.fecha_inicio, contratoExistente.fecha_fin]
+    )
+
     res.json({
       message: "✅ Solicitud aceptada y PDF generado correctamente.",
       pdf_url: pdfUrl
