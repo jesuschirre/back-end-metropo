@@ -2,11 +2,11 @@ const express = require("express");
 const router = express.Router();
 const db = require("../db");
 
-// 📄 Ruta para registrar una solicitud y un contrato relacionados
+//  Ruta para registrar una solicitud y un contrato relacionados
 router.post("/soliCon", async (req, res) => {
   try {
     // ==============================
-    // 1️⃣ Extraer datos del cuerpo
+    // Extraer datos del cuerpo
     // ==============================
     const {
       cliente_id,
@@ -32,14 +32,14 @@ router.post("/soliCon", async (req, res) => {
     }
 
     // ==============================
-    // 2️⃣ Calcular fecha de fin (30 días después)
+    // Calcular fecha de fin
     // ==============================
     const fechaFin = new Date(fecha_inicio);
     fechaFin.setDate(fechaFin.getDate() + 30);
     const diasEmisionJSON = JSON.stringify(dias_emision || []);
 
     // ==============================
-    // 3️⃣ Insertar contrato publicitario
+    // Insertar contrato publicitario
     // ==============================
     const [resultadoContrato] = await db.query(
       `INSERT INTO contratos_publicitarios 
@@ -61,7 +61,7 @@ router.post("/soliCon", async (req, res) => {
     const contratoId = resultadoContrato.insertId; // Guardar ID del contrato
 
     // ==============================
-    // 4️⃣ Insertar solicitud del cliente (ya con el ID del contrato)
+    // Insertar solicitud del cliente (ya con el ID del contrato)
     // ==============================
     await db.query(
       `INSERT INTO solicitudes_cliente 
@@ -71,15 +71,15 @@ router.post("/soliCon", async (req, res) => {
     );
 
     // ==============================
-    // 5️⃣ Responder al cliente
+    // Responder al cliente
     // ==============================
     res.status(201).json({
-      message: "✅ Solicitud y contrato registrados correctamente.",
+      message: " Solicitud y contrato registrados correctamente.",
       contratoId
     });
 
   } catch (err) {
-    console.error("❌ Error en /soliCon:", err);
+    console.error(" Error en /soliCon:", err);
     res.status(500).json({ message: "Error al registrar la solicitud o el contrato." });
   }
 });

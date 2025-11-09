@@ -41,7 +41,6 @@ app.use('/api/stock_admin', require('./routes/stock_admin'));
 app.use('/api/admin/usuarios', require('./routes/usuariosadmin'));
 app.use('/api/contratos_admin', require('./routes/contratos_admin'));
 app.use('/api/contratosySoli', require('./routes/contratos_soli'));
-app.use('/api/cliente', require('./routes/cliente'));
 
 // --- AÑADE ESTA LÍNEA AQUÍ ---
 app.use('/api/consultas_admin', require('./routes/consultas_admin'));

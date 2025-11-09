@@ -129,7 +129,7 @@ router.get('/perfil', verifyToken, async (req, res) => {
   const userId = req.user.id;
   try {
     const [results] = await db.query(
-      'SELECT id, nombre, rol, correo FROM usuarios WHERE id = ?',
+      'SELECT * FROM usuarios WHERE id = ?',
       [userId]
     );
     if (results.length === 0) return res.status(404).json({ error: 'Usuario no encontrado' });
@@ -144,7 +144,7 @@ router.get('/perfil', verifyToken, async (req, res) => {
 // --- CORRECCIÓN AQUÍ ---
 router.put('/perfil', verifyToken, async (req, res) => {
   const userId = req.user.id;
-  const { nombre, correo } = req.body;
+  const { nombre, correo, tipo_documento, numero_documento, direccion, biografia, telefono } = req.body;
 
   // Validación básica
   if (!nombre || !correo) {
@@ -152,7 +152,9 @@ router.put('/perfil', verifyToken, async (req, res) => {
   }
 
   try {
-    const [result] = await db.query('UPDATE usuarios SET nombre = ?, correo = ? WHERE id = ?', [nombre, correo, userId]);
+    const [result] = await db.query('UPDATE usuarios SET nombre = ?, correo = ?, tipo_documento = ?, numero_documento = ?, direccion = ?, biografia = ?, telefono = ? WHERE id = ?', 
+      [nombre, correo, tipo_documento , numero_documento, direccion, biografia, telefono,  userId]);
+
     if (result.affectedRows === 0) {
         return res.status(404).json({ error: 'Usuario no encontrado para actualizar.' });
     }
@@ -168,14 +170,19 @@ router.put('/perfil', verifyToken, async (req, res) => {
   }
 });
 
+router.get("/contra_usu", async ( req , res ) => {
+    try {
+      const { id_usu} = req.body  
+    } catch (error) {
+      
+    }
+})
+
 // =================================================================
 // RUTA SOLO PARA ADMIN - ACTUALIZADA CON MIDDLEWARE CORRECTO
 // =================================================================
-// --- CORRECCIÓN AQUÍ ---
 router.get('/admin-test', verifyToken, isAdmin, (req, res) => {
-  // Esta ruta es solo para probar que los middlewares verifyToken e isAdmin funcionan
   res.json({ message: 'Acceso concedido. Eres un administrador.' });
 });
 
-// ¡¡¡LÍNEA CLAVE!!! Asegúrate de que esto esté al final
 module.exports = router;
