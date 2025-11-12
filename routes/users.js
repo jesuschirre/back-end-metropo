@@ -170,19 +170,36 @@ router.put('/perfil', verifyToken, async (req, res) => {
   }
 });
 
-router.get("/contra_usu", async ( req , res ) => {
-    try {
-      const { id_usu} = req.body  
-    } catch (error) {
-      
-    }
-})
+router.get("/contra_usu/:id_usu", async (req, res) => {
+  try {
+    const { id_usu } = req.params; // Se obtiene desde la URL, no desde req.body
 
-// =================================================================
-// RUTA SOLO PARA ADMIN - ACTUALIZADA CON MIDDLEWARE CORRECTO
-// =================================================================
-router.get('/admin-test', verifyToken, isAdmin, (req, res) => {
-  res.json({ message: 'Acceso concedido. Eres un administrador.' });
+    // Consulta SQL corregida: INNER JOIN debe ir antes del WHERE
+    const [contratos_usu] = await db.query(`
+      SELECT 
+        c.nombre_campana,
+        c.estado,
+        c.fecha_inicio,
+        c.fecha_fin,
+        c.pdf_url,
+        u.nombre AS nombre_cliente
+      FROM contratos_publicitarios c
+      INNER JOIN usuarios u ON c.cliente_id = u.id
+      WHERE c.cliente_id = ?
+    `, [id_usu]);
+
+    // Verificar si hay resultados
+    if (contratos_usu.length === 0) {
+      return res.status(404).json({ message: "No se encontraron contratos para este usuario." });
+    }
+
+    // Devolver los contratos
+    res.json({ contratos: contratos_usu });
+
+  } catch (error) {
+    console.error("Error al obtener contratos del usuario:", error);
+    res.status(500).json({ message: "Error interno del servidor." });
+  }
 });
 
 module.exports = router;

@@ -29,25 +29,25 @@ router.post("/solicitudes-vendedor/aceptar", [verifyToken, isAdmin], async (req,
     const { solicitud_id } = req.body;
     if (!solicitud_id) return res.status(400).json({ message: "Falta el ID de la solicitud" });
 
-    // 1️⃣ Obtener solicitud
+    // Obtener solicitud
     const [rows] = await db.query("SELECT * FROM solicitudes_cliente WHERE id = ?", [solicitud_id]);
     if (rows.length === 0) return res.status(404).json({ message: "No se encontró la solicitud" });
 
     const solicitud = rows[0];
     const usuario_id = solicitud.usuario_id;
 
-    // 2️⃣ Obtener contrato asociado
+    // Obtener contrato asociado
     const [idcontrato] = await db.query(
       `SELECT idContrato FROM solicitudes_cliente WHERE id = ? LIMIT 1`, [solicitud_id]
     );
 
     if (idcontrato.length === 0 || !idcontrato[0].idContrato) {
-      return res.status(404).json({ message: "❌ No se encontró ningún contrato asociado a esta solicitud." });
+      return res.status(404).json({ message: "No se encontró ningún contrato asociado a esta solicitud" });
     }
 
     const contratoId = idcontrato[0].idContrato;
 
-    // 3️⃣ Obtener datos del contrato
+    // Obtener datos del contrato
     const [contratos] = await db.query(
       `SELECT cliente_id, plan_id, nombre_campana, fecha_inicio, fecha_fin, monto_acordado,
               detalles_anuncio, precio_base, descuento, dias_emision
@@ -74,21 +74,21 @@ router.post("/solicitudes-vendedor/aceptar", [verifyToken, isAdmin], async (req,
       dias_emision: contratoExistente.dias_emision
     };
 
-    // 4️⃣ Generar PDF
+    // Generar PDF
     const { pdfUrl } = await generarPDFContrato(contratoId, db, req, datosContratoPDF);
 
-    // 5️⃣ Actualizar contrato con URL del PDF
+    // Actualizar contrato con URL del PDF
     await db.query("UPDATE contratos_publicitarios SET pdf_url = ? WHERE id = ?", [pdfUrl, contratoId]);
     
     // actualizar estado del contrato a Programado
     await db.query("UPDATE contratos_publicitarios SET estado = 'Programado' WHERE id = ?", [contratoId])
 
-    // 6️⃣ Cambiar estados
+    // Cambiar estados
     await db.query("UPDATE solicitudes_cliente SET estado = 'aprobado' WHERE id = ?", [solicitud_id]);
     await db.query("UPDATE usuarios SET rol = 'cliente' WHERE id = ?", [usuario_id]);
 
     res.json({
-      message: "✅ Solicitud aceptada y PDF generado correctamente.",
+      message: "Solicitud aceptada y PDF generado correctamente.",
       pdf_url: pdfUrl
     });
 
