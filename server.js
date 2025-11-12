@@ -51,6 +51,7 @@ app.use('/api/dashboard_admin', require('./routes/dashboard_admin'));
 app.use('/api/usuarios_admin', require('./routes/usuariosadmin'));
 app.use('/api/clientes_admin', require('./routes/clientesadmin'));
 app.use('/reportes', require('./routes/reportes'))
+app.use('/tickets', require('./routes/tickets') )
 
 // INICIO DEL SERVIDOR
 const PORT = process.env.PORT || 3000;

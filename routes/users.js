@@ -29,7 +29,7 @@ router.post('/register', async (req, res) => {
     // Asegurarse de que el rol por defecto sea 'cliente' si aplica a tu lógica
     await db.query(
       'INSERT INTO usuarios (nombre, correo, password, rol) VALUES (?, ?, ?, ?)',
-      [nombre, correo, hashedPassword, rol || 'cliente'] // O 'usuario' si prefieres
+      [nombre, correo, hashedPassword, rol || 'usuario'] // O 'usuario' si prefieres
     );
 
     try {
