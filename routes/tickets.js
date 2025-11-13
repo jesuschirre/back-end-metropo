@@ -26,33 +26,51 @@ router.get("/", async (req, res) => {
 });
 
 // Cambiar a "En_Proceso"
-router.post("/procesar/:id_ticket", async (req, res) => {
+router.put("/procesar/:id_ticket", async (req, res) => {
   const { id_ticket } = req.params;
   try {
     const [result] = await db.query(
-      "UPDATE tickets_soporte SET estado = 'En_Proceso' WHERE id_ticket = ?",
+      "UPDATE tickets_soporte SET estado = 'En_Proceso' WHERE id = ?",
       [id_ticket]
     );
-    res.json({ message: "Ticket actualizado a 'En_Proceso'" });
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Ticket no encontrado" });
+    }
+
+    res.status(200).json({ message: "Ticket actualizado a 'En_Proceso'" });
   } catch (error) {
+    console.error("Error al procesar ticket:", error);
     res.status(500).json({ message: "Error al procesar ticket" });
   }
 });
 
-// Cambiar a "Cerrado"
-router.post("/cerrar/:id_ticket", async (req, res) => {
+// Cambiar a "Cerrado" y agregar mensaje_remitente
+router.put("/cerrar/:id_ticket", async (req, res) => {
   const { id_ticket } = req.params;
+  const { mensaje_remitente } = req.body;
+
+  if (!mensaje_remitente || !mensaje_remitente.trim()) {
+    return res.status(400).json({ message: "El mensaje de cierre es obligatorio" });
+  }
+
   try {
+    // Actualizamos estado y mensaje en un solo query
     const [result] = await db.query(
-      "UPDATE tickets_soporte SET estado = 'Cerrado' WHERE id_ticket = ?",
-      [id_ticket]
+      "UPDATE tickets_soporte SET estado = 'Resuelto', mensaje_remitente = ? WHERE id = ?",
+      [mensaje_remitente, id_ticket]
     );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Ticket no encontrado" });
+    }
+
     res.json({ message: "Ticket cerrado correctamente" });
   } catch (error) {
+    console.error("Error al cerrar ticket:", error);
     res.status(500).json({ message: "Error al cerrar ticket" });
   }
 });
-
 
 router.get("/:id_usu", async (req, res) => {
   try {
