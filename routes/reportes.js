@@ -1,7 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const db = require("../db");
-const { pdfreportesContratos, pdfporPlanes, pdfvidenciaC} = require("../middleware/generaraPDF");
+const { pdfreportesContratos, pdfporPlanes, pdfvidenciaC, pdfdema} = require("../middleware/generaraPDF");
+const { file } = require("pdfkit");
 
 router.get("/contratos", async (req, res) => {
   try {
@@ -43,6 +44,18 @@ router.get('/estado', async (req, res) => {
         console.error(error);
         res.status(500).json({ message: 'Error al generar el PDF' });
     }
+})
+
+router.get('/demandado', async (req, res) => {
+  try {
+    const {pdfName} = await pdfdema(db);
+    res.json({
+      file: pdfName
+    })
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error al generar el PDF' });
+  }
 })
 
 module.exports = router;
