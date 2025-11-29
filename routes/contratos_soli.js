@@ -26,8 +26,6 @@ router.post(
       if (req.file) {
         audioUrl = `http://localhost:3000/uploads/audios/${req.file.filename}`;
       }
-
-
       //  DATOS DE TEXTO 
       const {
         cliente_id,

@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const db = require("../db");
 const { pdfreportesContratos, pdfporPlanes, pdfvidenciaC, pdfdema} = require("../middleware/generaraPDF");
-const { file } = require("pdfkit");
 
 router.get("/contratos", async (req, res) => {
   try {
